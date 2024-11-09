@@ -6,13 +6,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <locale.h>
 
 /* --------------------------------- DEFINES -------------------------------- */
 
 
 /* --------------------------------- CONSTS --------------------------------- */
 
-const char charset[4] = {' ', 'O', 'X', 'E'};
+const char *charset[4] = {"  ", "\e[0;31m\ue0b6\ue0b4\e[0m", "\e[0;36m\ue0b6\ue0b4\e[0m", "  "};
 
 /* ----------------------- STATIC FUCNTIONS PROTOTYPES ---------------------- */
 
@@ -24,6 +25,7 @@ static cell_e fieldGetCell( const field_s *field, uint8_t row, uint8_t column );
 
 bool fieldTryInit( field_s *field, uint8_t width )
 {
+    setlocale(LC_ALL, "");
     if( width > FIELD_MAX_WIDTH )
     {
         return false;
@@ -42,23 +44,32 @@ bool fieldTryInit( field_s *field, uint8_t width )
 
 void fieldDraw( const field_s *field )
 {
-    for( uint32_t j = 0; j < 4; j++ )
+    
+    printf(" ");       
+    for( uint32_t i = 0; i < field->width/2; i++ )
     {
-        putchar('|');
-        for( uint32_t i = 0; i < field->width; i++ )
-        {
-             putchar(charset[ fieldGetCell( field, j, i ) ]);
-        }
-        printf("|\r\n");
-    }    
-
-          
-    for( uint32_t i = 0; i < field->width + 2; i++ )
-    {
-        putchar('-');
+        printf("\ue0be\ue0bc  ");
     }
 
-    printf("\r\n");
+    printf("\r\n");       
+    
+    for( uint32_t j = 0; j < 4; j++ )
+    {
+        printf("│");
+        for( uint32_t i = 0; i < field->width; i++ )
+        {
+             printf("%s", charset[ fieldGetCell( field, j, i ) ]);
+        }
+        printf("│\r\n");
+    }    
+
+    printf("└");       
+    for( uint32_t i = 0; i < field->width; i++ )
+    {
+        printf("──");
+    }
+
+    printf("┘\r\n");
 }
 
 /* ---------------------------- STATIC FUCNTIONS ---------------------------- */
