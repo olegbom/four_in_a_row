@@ -31,6 +31,7 @@ int main()
     fieldDraw( &f );
 
     uint8_t cursor_pos = 0;
+    cell_e chip = CELL_PLAYER_1;
     while(true)
     {
         int c = _getch();
@@ -38,15 +39,22 @@ int main()
         {
             if( cursor_pos > 0 )
                 cursor_pos--;
+            fieldDrawCursor( &f, cursor_pos );
         }
         else if( c == 'd' )
         {
             if( cursor_pos + 1 < f.width )
                 cursor_pos++;
+            fieldDrawCursor( &f, cursor_pos );
         }
-        else if( c == 'q' )
+        else if( c == 'q' || c == '\e')
         {
             break;
+        }
+        else if( c == ' ' )
+        {
+            fieldPutChip( &f, cursor_pos, chip );
+            chip = (chip == CELL_PLAYER_1) ? CELL_PLAYER_2 : CELL_PLAYER_1;
         }
 
         fieldDrawCursor( &f, cursor_pos );

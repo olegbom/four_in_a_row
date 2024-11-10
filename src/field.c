@@ -13,12 +13,12 @@
 
 /* --------------------------------- CONSTS --------------------------------- */
 
-
-// const char *charset[4] = {"  ", "\e[0;31m\ue0b6\ue0b4\e[0m", "\e[0;36m\ue0b6\ue0b4\e[0m", "  "};
 const char *charset[4] = {"  ", "\e[0;31m()\e[0m", "\e[0;36m<>\e[0m", "  "};
+
 /* ----------------------- STATIC FUCNTIONS PROTOTYPES ---------------------- */
 
 static cell_e fieldGetCell( const field_s *field, uint8_t row, uint8_t column );
+static void fieldSetCell( field_s *field, uint8_t row, uint8_t column, cell_e value );
 
 /* -------------------------------- TYPEDEFS -------------------------------- */
 
@@ -35,10 +35,10 @@ bool fieldTryInit( field_s *field, uint8_t width )
     memset( field, 0, width );
 
     srand(time(NULL));
-    for( uint32_t i = 0; i < field->width + 2; i++ )
-    {
-        field->cells[i] = (uint8_t) rand();        
-    }
+    // for( uint32_t i = 0; i < field->width + 2; i++ )
+    // {
+    //     field->cells[i] = (uint8_t) rand();        
+    // }
     
     return true;
 }
@@ -55,21 +55,21 @@ void fieldDraw( const field_s *field )
     
     for( uint32_t j = 0; j < 4; j++ )
     {
-        printf("│");
+        printf("|");
         for( uint32_t i = 0; i < field->width; i++ )
         {
              printf("%s", charset[ fieldGetCell( field, j, i ) ]);
         }
-        printf("│\r\n");
+        printf("|\r\n");
     }    
 
-    printf("└");       
+    printf("\\");       
     for( uint32_t i = 0; i < field->width; i++ )
     {
-        printf("──");
+        printf("--");
     }
 
-    printf("┘\r\n");
+    printf("/\r\n");
     fieldDrawCursor( field, 0 );
 }
 
@@ -94,6 +94,26 @@ void fieldDrawCursor( const field_s *field, uint8_t column )
     printf( "\e[u" );
 }
 
+void fieldPutChip( field_s *field, uint8_t column, cell_e chip )
+{
+    if( !field || column >= field->width ||
+        (chip != CELL_PLAYER_1 && chip != CELL_PLAYER_2) )
+    {
+        return;
+    }
+    
+    for( uint8_t i = 0; i < 4; i++ )
+    {
+        if( fieldGetCell( field, 3 - i, column) == CELL_EMPTY )
+        {
+            fieldSetCell( field, 3 - i, column, chip );
+            printf( "\e[s\e[%uA\e[%uC", i + 2, column * 2 + 1 ); 
+            printf( "%s", charset[ chip ] );
+            printf( "\e[u" );
+            break;
+        }
+    }
+}
 /* ---------------------------- STATIC FUCNTIONS ---------------------------- */
 
 static cell_e fieldGetCell( const field_s *field, uint8_t row, uint8_t column )
@@ -105,3 +125,14 @@ static cell_e fieldGetCell( const field_s *field, uint8_t row, uint8_t column )
 
     return (cell_e)( ( field->cells[column] >> (2*row) ) & 0x3 );
 }
+
+static void fieldSetCell( field_s *field, uint8_t row, uint8_t column, cell_e value )
+{
+    if( !field || row >= 4 || column >= field->width )
+    {
+        return;
+    } 
+
+    field->cells[column] = ( field->cells[column] & ~(3 << (2*row)) ) | ( value << (2*row) );
+}
+
