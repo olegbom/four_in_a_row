@@ -6,7 +6,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#include <locale.h>
 
 /* --------------------------------- DEFINES -------------------------------- */
 
@@ -26,7 +25,6 @@ static void fieldSetCell( field_s *field, uint8_t row, uint8_t column, cell_e va
 
 bool fieldTryInit( field_s *field, uint8_t width )
 {
-    setlocale(LC_ALL, "");
     if( width > FIELD_MAX_WIDTH )
     {
         return false;
@@ -94,25 +92,64 @@ void fieldDrawCursor( const field_s *field, uint8_t column )
     printf( "\e[u" );
 }
 
-void fieldPutChip( field_s *field, uint8_t column, cell_e chip )
+bool fieldPutChip( field_s *field, uint8_t column, cell_e chip )
 {
     if( !field || column >= field->width ||
         (chip != CELL_PLAYER_1 && chip != CELL_PLAYER_2) )
     {
-        return;
+        return false;
     }
     
     for( uint8_t i = 0; i < 4; i++ )
     {
-        if( fieldGetCell( field, 3 - i, column) == CELL_EMPTY )
+        uint8_t row = 3 - i;
+        if( fieldGetCell( field, row, column) == CELL_EMPTY )
         {
-            fieldSetCell( field, 3 - i, column, chip );
+            fieldSetCell( field, row, column, chip );
             printf( "\e[s\e[%uA\e[%uC", i + 2, column * 2 + 1 ); 
             printf( "%s", charset[ chip ] );
             printf( "\e[u" );
+
+            //check horizontaly
+            uint8_t score = 1;
+            #define ADD_CHECK_SCORE score++; if( score == 4 ) return true;
+            if( column >= 1 && fieldGetCell( field, row, column - 1 ) == chip )
+            {
+                ADD_CHECK_SCORE
+                if( column >= 2 && fieldGetCell( field, row, column - 2 ) == chip )
+                {
+                    ADD_CHECK_SCORE
+                    if( column >= 3 && fieldGetCell( field, row, column - 3 ) == chip )
+                    {
+                        ADD_CHECK_SCORE
+                    }
+                }
+            }
+            
+            if( column + 1 <= field->width && fieldGetCell( field, row, column + 1 ) == chip )
+            {
+                ADD_CHECK_SCORE
+                if( column + 2 <= field->width && fieldGetCell( field, row, column + 2 ) == chip )
+                {
+                    ADD_CHECK_SCORE
+                    if( column + 3 <= field->width && fieldGetCell( field, row, column + 3 ) == chip )
+                    {
+                        ADD_CHECK_SCORE
+                    }
+                }
+            }
+
+            //check vertically
+            if( field->cells[column] == ( chip | (chip << 2) | (chip << 4) | (chip << 6) ) )
+            {
+                return true;
+            }
+            
             break;
         }
     }
+    
+    return false;
 }
 /* ---------------------------- STATIC FUCNTIONS ---------------------------- */
 

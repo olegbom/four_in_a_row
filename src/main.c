@@ -53,11 +53,14 @@ int main()
         }
         else if( c == ' ' )
         {
-            fieldPutChip( &f, cursor_pos, chip );
+            if( fieldPutChip( &f, cursor_pos, chip ) )
+            {
+                printf("PLAYER %u WIN!\r\n", chip);
+                break;
+            }
+            
             chip = (chip == CELL_PLAYER_1) ? CELL_PLAYER_2 : CELL_PLAYER_1;
         }
-
-        fieldDrawCursor( &f, cursor_pos );
     }
     
     printf("Goodby!");
