@@ -13,8 +13,9 @@
 
 /* --------------------------------- CONSTS --------------------------------- */
 
-const char *charset[4] = {"  ", "\e[0;31m\ue0b6\ue0b4\e[0m", "\e[0;36m\ue0b6\ue0b4\e[0m", "  "};
 
+// const char *charset[4] = {"  ", "\e[0;31m\ue0b6\ue0b4\e[0m", "\e[0;36m\ue0b6\ue0b4\e[0m", "  "};
+const char *charset[4] = {"  ", "\e[0;31m()\e[0m", "\e[0;36m<>\e[0m", "  "};
 /* ----------------------- STATIC FUCNTIONS PROTOTYPES ---------------------- */
 
 static cell_e fieldGetCell( const field_s *field, uint8_t row, uint8_t column );
@@ -44,11 +45,10 @@ bool fieldTryInit( field_s *field, uint8_t width )
 
 void fieldDraw( const field_s *field )
 {
-    
     printf(" ");       
     for( uint32_t i = 0; i < field->width/2; i++ )
     {
-        printf("\ue0be\ue0bc  ");
+        printf("  ");
     }
 
     printf("\r\n");       
@@ -70,6 +70,28 @@ void fieldDraw( const field_s *field )
     }
 
     printf("┘\r\n");
+    fieldDrawCursor( field, 0 );
+}
+
+void fieldDrawCursor( const field_s *field, uint8_t column )
+{
+    if( !field && column >= field->width )
+        return;
+
+    printf( "\e[s\e[6A " ); 
+    for( int i = 0; i < column; i++ )
+    {
+        printf("  ");
+    }
+    
+    // printf( "\ue0be\ue0bc" ); 
+    printf( "\\/" ); 
+    for( int i = column + 1; i < field->width; i++ )
+    {
+        printf("  ");
+    }
+    
+    printf( "\e[u" );
 }
 
 /* ---------------------------- STATIC FUCNTIONS ---------------------------- */

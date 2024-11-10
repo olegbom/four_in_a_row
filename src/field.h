@@ -33,3 +33,4 @@ typedef enum
 
 bool fieldTryInit( field_s *field, uint8_t width );
 void fieldDraw( const field_s *field );
+void fieldDrawCursor( const field_s *field, uint8_t column );

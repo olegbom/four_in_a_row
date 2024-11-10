@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include "field.h"
-
+#include <conio.h>
 
 #include <fcntl.h>
 #include <io.h>
@@ -29,6 +29,28 @@ int main()
     }
     
     fieldDraw( &f );
+
+    uint8_t cursor_pos = 0;
+    while(true)
+    {
+        int c = _getch();
+        if( c == 'a' )
+        {
+            if( cursor_pos > 0 )
+                cursor_pos--;
+        }
+        else if( c == 'd' )
+        {
+            if( cursor_pos + 1 < f.width )
+                cursor_pos++;
+        }
+        else if( c == 'q' )
+        {
+            break;
+        }
+
+        fieldDrawCursor( &f, cursor_pos );
+    }
     
     printf("Goodby!");
     return 0;
