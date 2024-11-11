@@ -68,22 +68,24 @@ void fieldDraw( const field_s *field )
     }
 
     printf("/\r\n");
-    fieldDrawCursor( field, 0 );
+    fieldDrawCursor( field, 0, CELL_PLAYER_1 );
 }
 
-void fieldDrawCursor( const field_s *field, uint8_t column )
+void fieldDrawCursor( const field_s *field, uint8_t column, cell_e chip )
 {
-    if( !field && column >= field->width )
+    if( !field || column >= field->width || 
+        (chip != CELL_PLAYER_1 && chip != CELL_PLAYER_2) )
         return;
 
-    printf( "\e[s\e[6A " ); 
+    printf( "\e[s\e[6A" ); 
     for( int i = 0; i < column; i++ )
     {
         printf("  ");
     }
     
     // printf( "\ue0be\ue0bc" ); 
-    printf( "\\/" ); 
+    // printf( "\\/" ); 
+    printf( "{%s}", charset[ chip ] );
     for( int i = column + 1; i < field->width; i++ )
     {
         printf("  ");
@@ -92,12 +94,12 @@ void fieldDrawCursor( const field_s *field, uint8_t column )
     printf( "\e[u" );
 }
 
-bool fieldPutChip( field_s *field, uint8_t column, cell_e chip )
+step_e fieldPutChip( field_s *field, uint8_t column, cell_e chip )
 {
     if( !field || column >= field->width ||
         (chip != CELL_PLAYER_1 && chip != CELL_PLAYER_2) )
     {
-        return false;
+        return STEP_NOT_AVAILABLE;
     }
     
     for( uint8_t i = 0; i < 4; i++ )
@@ -112,7 +114,7 @@ bool fieldPutChip( field_s *field, uint8_t column, cell_e chip )
 
             //check horizontaly
             uint8_t score = 1;
-            #define ADD_CHECK_SCORE score++; if( score == 4 ) return true;
+            #define ADD_CHECK_SCORE score++; if( score == 4 ) return STEP_WIN;
             if( column >= 1 && fieldGetCell( field, row, column - 1 ) == chip )
             {
                 ADD_CHECK_SCORE
@@ -142,14 +144,14 @@ bool fieldPutChip( field_s *field, uint8_t column, cell_e chip )
             //check vertically
             if( field->cells[column] == ( chip | (chip << 2) | (chip << 4) | (chip << 6) ) )
             {
-                return true;
+                return STEP_WIN;
             }
             
-            break;
+            return STEP_NORMAL;
         }
     }
     
-    return false;
+    return STEP_NOT_AVAILABLE;
 }
 /* ---------------------------- STATIC FUCNTIONS ---------------------------- */
 

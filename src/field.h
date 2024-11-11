@@ -29,9 +29,15 @@ typedef enum
     CELL_UNDEFINED = 3
 } cell_e;
 
+typedef enum
+{
+    STEP_NORMAL,
+    STEP_WIN,
+    STEP_NOT_AVAILABLE,
+} step_e;
 /* -------------------------- FUNCTIONS PROTOTYPES -------------------------- */
 
 bool fieldTryInit( field_s *field, uint8_t width );
 void fieldDraw( const field_s *field );
-void fieldDrawCursor( const field_s *field, uint8_t column );
-bool fieldPutChip( field_s *field, uint8_t column, cell_e chip );
+void fieldDrawCursor( const field_s *field, uint8_t column, cell_e chip );
+step_e fieldPutChip( field_s *field, uint8_t column, cell_e chip );

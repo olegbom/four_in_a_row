@@ -39,13 +39,11 @@ int main()
         {
             if( cursor_pos > 0 )
                 cursor_pos--;
-            fieldDrawCursor( &f, cursor_pos );
         }
         else if( c == 'd' )
         {
             if( cursor_pos + 1 < f.width )
                 cursor_pos++;
-            fieldDrawCursor( &f, cursor_pos );
         }
         else if( c == 'q' || c == '\e')
         {
@@ -53,14 +51,19 @@ int main()
         }
         else if( c == ' ' )
         {
-            if( fieldPutChip( &f, cursor_pos, chip ) )
+            step_e result = fieldPutChip( &f, cursor_pos, chip ); 
+            if( result == STEP_WIN )
             {
                 printf("PLAYER %u WIN!\r\n", chip);
                 break;
             }
-            
-            chip = (chip == CELL_PLAYER_1) ? CELL_PLAYER_2 : CELL_PLAYER_1;
+            else if( result == STEP_NORMAL ) 
+            {
+                chip = (chip == CELL_PLAYER_1) ? CELL_PLAYER_2 : CELL_PLAYER_1;
+            }
         }
+
+        fieldDrawCursor( &f, cursor_pos, chip );
     }
     
     printf("Goodby!");
