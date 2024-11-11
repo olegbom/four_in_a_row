@@ -1,14 +1,11 @@
-# Example of a project using the can_transport_protocol library
+# Four in a Row Game 
 
-## Build and run tests
+## About
 
-If you want to build can_transport_protocol as DLL use for generate Makefiles:
+Classical logic game for two players. Written on C, work on Windows only 
+(Requires ANSI escape control summort in your terminal emulator). 
 
-```sh
-cmake -S . -B build -D CTP_SHARED=ON
-```
-
-Otherwise:
+## Build
 
 ```sh
 cmake -S . -B build
@@ -18,10 +15,4 @@ And build
 
 ```sh
 cmake --build build
-```
-
-Launch tests:
-
-```sh
-ctest --test-dir build --build-config debug --verbose
 ```
