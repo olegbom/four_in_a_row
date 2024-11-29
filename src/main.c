@@ -110,6 +110,6 @@ int main()
         fieldDrawCursor( &f, cursor_pos, chip );
     }
     
-    printf("Goodby!");
+    printf("Goodby!\r\n");
     return 0;
 }
