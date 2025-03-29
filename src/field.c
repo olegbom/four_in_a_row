@@ -2,10 +2,9 @@
 /* -------------------------------- INCLUDES -------------------------------- */
 
 #include "field.h"
+#include <stdint.h>
 #include <string.h>
 #include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
 
 /* --------------------------------- DEFINES -------------------------------- */
 
@@ -21,7 +20,15 @@ static void fieldSetCell( field_s *field, uint8_t row, uint8_t column, cell_e va
 
 /* -------------------------------- TYPEDEFS -------------------------------- */
 
-
+int my_puts( const char *s )
+{
+    for( size_t i = 0; s[i]; ++i )
+    {
+        if( putchar( s[i] ) == EOF )
+            return EOF;
+    }
+    return 0;
+}
 
 bool fieldTryInit( field_s *field, uint8_t width )
 {
@@ -31,43 +38,36 @@ bool fieldTryInit( field_s *field, uint8_t width )
     }
     field->width = width;
     memset( field, 0, width );
-
-    srand(time(NULL));
-    // for( uint32_t i = 0; i < field->width + 2; i++ )
-    // {
-    //     field->cells[i] = (uint8_t) rand();        
-    // }
-    
     return true;
 }
 
 void fieldDraw( const field_s *field )
 {
-    printf(" ");       
+    my_puts(" ");       
     for( uint32_t i = 0; i < field->width/2; i++ )
     {
-        printf("  ");
+        my_puts("  ");
     }
 
-    printf("\r\n");       
+    my_puts("\r\n");       
     
     for( uint32_t j = 0; j < 4; j++ )
     {
-        printf("|");
+        my_puts("|");
         for( uint32_t i = 0; i < field->width; i++ )
         {
-             printf("%s", charset[ fieldGetCell( field, j, i ) ]);
+             my_puts(charset[ fieldGetCell( field, j, i ) ]);
         }
-        printf("|\r\n");
+        my_puts("|\r\n");
     }    
 
-    printf("\\");       
+    my_puts("\\");       
     for( uint32_t i = 0; i < field->width; i++ )
     {
-        printf("--");
+        my_puts("--");
     }
 
-    printf("/\r\n");
+    my_puts("/\r\n");
     fieldDrawCursor( field, 0, CELL_PLAYER_1 );
 }
 
@@ -77,21 +77,23 @@ void fieldDrawCursor( const field_s *field, uint8_t column, cell_e chip )
         (chip != CELL_PLAYER_1 && chip != CELL_PLAYER_2) )
         return;
 
-    printf( "\e[s\e[6A" ); 
+    my_puts( "\e[s\e[6A" ); 
     for( int i = 0; i < column; i++ )
     {
-        printf("  ");
+        my_puts("  ");
     }
     
-    // printf( "\ue0be\ue0bc" ); 
-    // printf( "\\/" ); 
-    printf( "{%s}", charset[ chip ] );
+    // my_puts( "\ue0be\ue0bc" ); 
+    // my_puts( "\\/" );
+    my_puts( "{" ); 
+    my_puts( charset[ chip ] );
+    my_puts( "}" ); 
     for( int i = column + 1; i < field->width; i++ )
     {
-        printf("  ");
+        my_puts("  ");
     }
     
-    printf( "\e[u" );
+    my_puts( "\e[u" );
 }
 
 step_e fieldPutChip( field_s *field, uint8_t column, cell_e chip )
@@ -108,9 +110,19 @@ step_e fieldPutChip( field_s *field, uint8_t column, cell_e chip )
         if( fieldGetCell( field, row, column) == CELL_EMPTY )
         {
             fieldSetCell( field, row, column, chip );
-            printf( "\e[s\e[%uA\e[%uC", i + 2, column * 2 + 1 ); 
-            printf( "%s", charset[ chip ] );
-            printf( "\e[u" );
+            my_puts( "\e[s" );
+            for( uint32_t j = 0; j < i + 2; j++ )
+            {
+                my_puts( "\e[1A" );
+            }
+
+            for( uint32_t j = 0; j < column * 2 + 1; j++ )
+            {
+                my_puts( "\e[1C" );
+            }
+
+            my_puts( charset[ chip ] );
+            my_puts( "\e[u" );
 
             //check horizontaly
             uint8_t score = 1;

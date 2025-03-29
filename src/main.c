@@ -68,7 +68,7 @@ int main()
     field_s f;
     if( !fieldTryInit( &f, 12 ) )
     {
-        printf("Error init!");
+        my_puts("Error init!");
         return -1;
     }
     
@@ -98,7 +98,10 @@ int main()
             step_e result = fieldPutChip( &f, cursor_pos, chip ); 
             if( result == STEP_WIN )
             {
-                printf("PLAYER %u WIN!\r\n", chip);
+                if( chip == CELL_PLAYER_1 )
+                    my_puts("PLAYER 1 WIN!\r\n");
+                else
+                    my_puts("PLAYER 2 WIN!\r\n");
                 break;
             }
             else if( result == STEP_NORMAL ) 
@@ -110,6 +113,6 @@ int main()
         fieldDrawCursor( &f, cursor_pos, chip );
     }
     
-    printf("Goodby!\r\n");
+    my_puts("Goodby!\r\n");
     return 0;
 }

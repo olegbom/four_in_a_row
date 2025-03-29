@@ -7,6 +7,11 @@ project(four_in_a_row
 file(GLOB_RECURSE PROJECT_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_LIST_DIR}/src/*.c") 
 # Define PROJECT_INCLUDE to be the path to the include directory of the project
 set(PROJECT_INCLUDE "${CMAKE_CURRENT_LIST_DIR}/src/") 
+
+set(CMAKE_C_FLAGS "-Wall -Wextra")
+set(CMAKE_C_FLAGS_DEBUG "-g")
+set(CMAKE_C_FLAGS_RELEASE "-O3 -Oz")
+
 add_executable(${PROJECT_NAME})
 
 target_sources(${PROJECT_NAME} PRIVATE ${PROJECT_SOURCES})
