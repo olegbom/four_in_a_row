@@ -126,38 +126,50 @@ step_e fieldPutChip( field_s *field, uint8_t column, cell_e chip )
 
             //check horizontaly
             uint8_t score = 1;
-            #define ADD_CHECK_SCORE score++; if( score == 4 ) return STEP_WIN;
-            if( fieldGetCell( field, row, column - 1 ) == chip )
-            {
-                ADD_CHECK_SCORE
-                if( fieldGetCell( field, row, column - 2 ) == chip )
-                {
-                    ADD_CHECK_SCORE
-                    if( fieldGetCell( field, row, column - 3 ) == chip )
-                    {
-                        ADD_CHECK_SCORE
-                    }
-                }
-            }
-            
-            if( fieldGetCell( field, row, column + 1 ) == chip )
-            {
-                ADD_CHECK_SCORE
-                if( fieldGetCell( field, row, column + 2 ) == chip )
-                {
-                    ADD_CHECK_SCORE
-                    if( fieldGetCell( field, row, column + 3 ) == chip )
-                    {
-                        ADD_CHECK_SCORE
-                    }
-                }
-            }
+            #define ADD_CHECK_SCORE(i,j) \
+                if( fieldGetCell( field, row + (i), column + (j) ) != chip )\
+                    break;\
+                score++; \
+                if( score == 4 ) return STEP_WIN;
 
+            do
+            {
+                ADD_CHECK_SCORE(0,-1);
+                ADD_CHECK_SCORE(0,-2);
+                ADD_CHECK_SCORE(0,-3);
+            }while(0);
+
+            do
+            {
+                ADD_CHECK_SCORE(0, 1);
+                ADD_CHECK_SCORE(0, 2);
+                ADD_CHECK_SCORE(0, 3);
+            }while(0);   
+                     
             //check vertically
             if( field->cells[column] == ( chip | (chip << 2) | (chip << 4) | (chip << 6) ) )
             {
                 return STEP_WIN;
             }
+
+            //check diagonally
+            score = 0;
+            do
+            {
+                ADD_CHECK_SCORE(-row, -row);
+                ADD_CHECK_SCORE(-row + 1, -row + 1);
+                ADD_CHECK_SCORE(-row + 2, -row + 2);
+                ADD_CHECK_SCORE(-row + 3, -row + 3);
+            }while(0);
+            
+            score = 0;
+            do
+            {
+                ADD_CHECK_SCORE(-row, row);
+                ADD_CHECK_SCORE(-row + 1, row - 1);
+                ADD_CHECK_SCORE(-row + 2, row - 2);
+                ADD_CHECK_SCORE(-row + 3, row - 3);
+            }while(0);
             
             return STEP_NORMAL;
         }
