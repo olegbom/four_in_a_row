@@ -127,26 +127,26 @@ step_e fieldPutChip( field_s *field, uint8_t column, cell_e chip )
             //check horizontaly
             uint8_t score = 1;
             #define ADD_CHECK_SCORE score++; if( score == 4 ) return STEP_WIN;
-            if( column >= 1 && fieldGetCell( field, row, column - 1 ) == chip )
+            if( fieldGetCell( field, row, column - 1 ) == chip )
             {
                 ADD_CHECK_SCORE
-                if( column >= 2 && fieldGetCell( field, row, column - 2 ) == chip )
+                if( fieldGetCell( field, row, column - 2 ) == chip )
                 {
                     ADD_CHECK_SCORE
-                    if( column >= 3 && fieldGetCell( field, row, column - 3 ) == chip )
+                    if( fieldGetCell( field, row, column - 3 ) == chip )
                     {
                         ADD_CHECK_SCORE
                     }
                 }
             }
             
-            if( column + 1 <= field->width && fieldGetCell( field, row, column + 1 ) == chip )
+            if( fieldGetCell( field, row, column + 1 ) == chip )
             {
                 ADD_CHECK_SCORE
-                if( column + 2 <= field->width && fieldGetCell( field, row, column + 2 ) == chip )
+                if( fieldGetCell( field, row, column + 2 ) == chip )
                 {
                     ADD_CHECK_SCORE
-                    if( column + 3 <= field->width && fieldGetCell( field, row, column + 3 ) == chip )
+                    if( fieldGetCell( field, row, column + 3 ) == chip )
                     {
                         ADD_CHECK_SCORE
                     }
