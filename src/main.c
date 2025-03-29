@@ -3,7 +3,7 @@
 
 #ifdef _WIN32
 #include <fcntl.h>
-#include <io.h>
+#include <conio.h>
 #include <windows.h>
 
 int getch()
