@@ -17,6 +17,8 @@ const char *charset[4] = {"  ", "\e[0;31m()\e[0m", "\e[0;36m<>\e[0m", "  "};
 
 static cell_e fieldGetCell( const field_s *field, uint8_t row, uint8_t column );
 static void fieldSetCell( field_s *field, uint8_t row, uint8_t column, cell_e value );
+static void printChip( uint8_t row, uint8_t column, cell_e chip );
+step_e checkScore( const field_s *field, uint8_t row, uint8_t column );
 
 /* -------------------------------- TYPEDEFS -------------------------------- */
 
@@ -83,8 +85,6 @@ void fieldDrawCursor( const field_s *field, uint8_t column, cell_e chip )
         my_puts("  ");
     }
     
-    // my_puts( "\ue0be\ue0bc" ); 
-    // my_puts( "\\/" );
     my_puts( "{" ); 
     my_puts( charset[ chip ] );
     my_puts( "}" ); 
@@ -107,71 +107,11 @@ step_e fieldPutChip( field_s *field, uint8_t column, cell_e chip )
     for( uint8_t i = 0; i < 4; i++ )
     {
         uint8_t row = 3 - i;
-        if( fieldGetCell( field, row, column) == CELL_EMPTY )
+        if( fieldGetCell( field, row, column ) == CELL_EMPTY )
         {
             fieldSetCell( field, row, column, chip );
-            my_puts( "\e[s" );
-            for( uint32_t j = 0; j < i + 2; j++ )
-            {
-                my_puts( "\e[1A" );
-            }
-
-            for( uint32_t j = 0; j < column * 2 + 1; j++ )
-            {
-                my_puts( "\e[1C" );
-            }
-
-            my_puts( charset[ chip ] );
-            my_puts( "\e[u" );
-
-            //check horizontaly
-            uint8_t score = 1;
-            #define ADD_CHECK_SCORE(i,j) \
-                if( fieldGetCell( field, row + (i), column + (j) ) != chip )\
-                    break;\
-                score++; \
-                if( score == 4 ) return STEP_WIN;
-
-            do
-            {
-                ADD_CHECK_SCORE(0,-1);
-                ADD_CHECK_SCORE(0,-2);
-                ADD_CHECK_SCORE(0,-3);
-            }while(0);
-
-            do
-            {
-                ADD_CHECK_SCORE(0, 1);
-                ADD_CHECK_SCORE(0, 2);
-                ADD_CHECK_SCORE(0, 3);
-            }while(0);   
-                     
-            //check vertically
-            if( field->cells[column] == ( chip | (chip << 2) | (chip << 4) | (chip << 6) ) )
-            {
-                return STEP_WIN;
-            }
-
-            //check diagonally
-            score = 0;
-            do
-            {
-                ADD_CHECK_SCORE(-row, -row);
-                ADD_CHECK_SCORE(-row + 1, -row + 1);
-                ADD_CHECK_SCORE(-row + 2, -row + 2);
-                ADD_CHECK_SCORE(-row + 3, -row + 3);
-            }while(0);
-            
-            score = 0;
-            do
-            {
-                ADD_CHECK_SCORE(-row, row);
-                ADD_CHECK_SCORE(-row + 1, row - 1);
-                ADD_CHECK_SCORE(-row + 2, row - 2);
-                ADD_CHECK_SCORE(-row + 3, row - 3);
-            }while(0);
-            
-            return STEP_NORMAL;
+            printChip( row, column, chip );
+            return checkScore( field, row, column );
         }
     }
     
@@ -199,3 +139,72 @@ static void fieldSetCell( field_s *field, uint8_t row, uint8_t column, cell_e va
     field->cells[column] = ( field->cells[column] & ~(3 << (2*row)) ) | ( value << (2*row) );
 }
 
+static void printChip( uint8_t row, uint8_t column, cell_e chip )
+{
+    my_puts( "\e[s" );
+    for( uint32_t j = 0; j < 5 - row; j++ )
+    {
+        my_puts( "\e[1A" );
+    }
+
+    for( uint32_t j = 0; j < column * 2 + 1; j++ )
+    {
+        my_puts( "\e[1C" );
+    }
+
+    my_puts( charset[ chip ] );
+    my_puts( "\e[u" );
+}
+
+step_e checkScore( const field_s *field, uint8_t row, uint8_t column )
+{
+    cell_e chip = fieldGetCell( field, row, column );
+    //check horizontaly
+    uint8_t score = 1;
+    #define ADD_CHECK_SCORE(i,j) \
+        if( fieldGetCell( field, row + (i), column + (j) ) != chip )\
+            break;\
+        score++; \
+        if( score == 4 ) return STEP_WIN;
+
+    do
+    {
+        ADD_CHECK_SCORE(0,-1);
+        ADD_CHECK_SCORE(0,-2);
+        ADD_CHECK_SCORE(0,-3);
+    }while(0);
+
+    do
+    {
+        ADD_CHECK_SCORE(0, 1);
+        ADD_CHECK_SCORE(0, 2);
+        ADD_CHECK_SCORE(0, 3);
+    }while(0);   
+                     
+    //check vertically
+    if( field->cells[column] == ( chip | (chip << 2) | (chip << 4) | (chip << 6) ) )
+    {
+        return STEP_WIN;
+    }
+
+    //check diagonally
+    score = 0;
+    do
+    {
+        ADD_CHECK_SCORE(-row, -row);
+        ADD_CHECK_SCORE(-row + 1, -row + 1);
+        ADD_CHECK_SCORE(-row + 2, -row + 2);
+        ADD_CHECK_SCORE(-row + 3, -row + 3);
+    }while(0);
+            
+    score = 0;
+    do
+    {
+        ADD_CHECK_SCORE(-row, row);
+        ADD_CHECK_SCORE(-row + 1, row - 1);
+        ADD_CHECK_SCORE(-row + 2, row - 2);
+        ADD_CHECK_SCORE(-row + 3, row - 3);
+    }while(0);
+            
+    return STEP_NORMAL;
+}
