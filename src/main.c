@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "field.h"
+#include "solver.h"
 
 #ifdef _WIN32
 #include <fcntl.h>
@@ -64,8 +65,16 @@ char getche(void)
 
 int main()
 {
+        
     field_s f = {0};
-    
+
+    solverState_s state = CalculatePossibilities( &f );
+  
+    printf( "number_of_dead_heat %d\r\n", state.number_of_dead_heat );
+    printf( "number_of_winnings_of_player_1 %d\r\n", state.number_of_winnings_of_player_1 );
+    printf( "number_of_winnings_of_player_2 %d\r\n", state.number_of_winnings_of_player_2 );
+
+    return 0;
     fieldDraw( &f );
 
     uint8_t cursor_pos = 0;
@@ -89,7 +98,7 @@ int main()
         }
         else if( c == ' ' )
         {
-            step_e result = fieldPutChip( &f, cursor_pos, chip ); 
+            step_e result = fieldPutChip( &f, cursor_pos, chip, true ); 
             if( result == STEP_WIN )
             {
                 if( chip == CELL_PLAYER_1 )

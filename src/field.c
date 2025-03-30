@@ -84,21 +84,25 @@ void fieldDrawCursor( const field_s *field, uint8_t column, cell_e chip )
     my_puts( "\e[u" );
 }
 
-step_e fieldPutChip( field_s *field, uint8_t column, cell_e chip )
+step_e fieldPutChip( field_s *field, uint8_t column, cell_e chip, bool is_print )
 {
-    if( !field || column >= FIELD_WIDTH ||
-        (chip != CELL_PLAYER_1 && chip != CELL_PLAYER_2) )
-    {
-        return STEP_NOT_AVAILABLE;
-    }
-    
+    // if( !field || column >= FIELD_WIDTH ||
+    //     (chip != CELL_PLAYER_1 && chip != CELL_PLAYER_2) )
+    // {
+    //     return STEP_NOT_AVAILABLE;
+    // }
+
     for( uint8_t i = 0; i < 4; i++ )
     {
         uint8_t row = 3 - i;
         if( fieldGetCell( field, row, column ) == CELL_EMPTY )
         {
             fieldSetCell( field, row, column, chip );
-            printChip( row, column, chip );
+            // if( is_print )
+            // {
+            //     printChip( row, column, chip );
+            // }
+            
             return checkScore( field, row, column );
         }
     }
@@ -119,10 +123,10 @@ static cell_e fieldGetCell( const field_s *field, uint8_t row, uint8_t column )
 
 static void fieldSetCell( field_s *field, uint8_t row, uint8_t column, cell_e value )
 {
-    if( !field || row >= 4 || column >= FIELD_WIDTH )
-    {
-        return;
-    } 
+    // if( !field || row >= 4 || column >= FIELD_WIDTH )
+    // {
+    //     return;
+    // } 
 
     field->cells[column] = ( field->cells[column] & ~(3 << (2*row)) ) | ( value << (2*row) );
 }

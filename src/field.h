@@ -7,7 +7,7 @@
 
 /* --------------------------------- DEFINES -------------------------------- */
 
-#define FIELD_WIDTH (9)
+#define FIELD_WIDTH (4)
 
 #if FIELD_WIDTH > UINT8_MAX
 #error FIELD_MAX_WIDTH too big
@@ -38,6 +38,6 @@ typedef enum
 
 void fieldDraw( const field_s *field );
 void fieldDrawCursor( const field_s *field, uint8_t column, cell_e chip );
-step_e fieldPutChip( field_s *field, uint8_t column, cell_e chip );
+step_e fieldPutChip( field_s *field, uint8_t column, cell_e chip, bool is_print );
 int my_puts( const char *s );
 
