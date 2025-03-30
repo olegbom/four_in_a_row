@@ -64,13 +64,7 @@ char getche(void)
 
 int main()
 {
-
-    field_s f;
-    if( !fieldTryInit( &f, 12 ) )
-    {
-        my_puts("Error init!");
-        return -1;
-    }
+    field_s f = {0};
     
     fieldDraw( &f );
 
@@ -86,7 +80,7 @@ int main()
         }
         else if( c == 'd' )
         {
-            if( cursor_pos + 1 < f.width )
+            if( cursor_pos + 1 < FIELD_WIDTH )
                 cursor_pos++;
         }
         else if( c == 'q' || c == '\e')

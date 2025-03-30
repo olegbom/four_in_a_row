@@ -7,9 +7,9 @@
 
 /* --------------------------------- DEFINES -------------------------------- */
 
-#define FIELD_MAX_WIDTH (255)
+#define FIELD_WIDTH (9)
 
-#if FIELD_MAX_WIDTH > UINT8_MAX
+#if FIELD_WIDTH > UINT8_MAX
 #error FIELD_MAX_WIDTH too big
 #endif
 
@@ -17,8 +17,7 @@
 
 typedef struct 
 {
-    uint8_t cells[FIELD_MAX_WIDTH];
-    uint8_t width;    
+    uint8_t cells[FIELD_WIDTH];
 } field_s;
 
 typedef enum 
@@ -37,7 +36,6 @@ typedef enum
 } step_e;
 /* -------------------------- FUNCTIONS PROTOTYPES -------------------------- */
 
-bool fieldTryInit( field_s *field, uint8_t width );
 void fieldDraw( const field_s *field );
 void fieldDrawCursor( const field_s *field, uint8_t column, cell_e chip );
 step_e fieldPutChip( field_s *field, uint8_t column, cell_e chip );

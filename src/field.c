@@ -3,7 +3,6 @@
 
 #include "field.h"
 #include <stdint.h>
-#include <string.h>
 #include <stdio.h>
 
 /* --------------------------------- DEFINES -------------------------------- */
@@ -18,7 +17,7 @@ const char *charset[4] = {"  ", "\e[0;31m()\e[0m", "\e[0;36m<>\e[0m", "  "};
 static cell_e fieldGetCell( const field_s *field, uint8_t row, uint8_t column );
 static void fieldSetCell( field_s *field, uint8_t row, uint8_t column, cell_e value );
 static void printChip( uint8_t row, uint8_t column, cell_e chip );
-step_e checkScore( const field_s *field, uint8_t row, uint8_t column );
+static step_e checkScore( const field_s *field, uint8_t row, uint8_t column );
 
 /* -------------------------------- TYPEDEFS -------------------------------- */
 
@@ -32,21 +31,10 @@ int my_puts( const char *s )
     return 0;
 }
 
-bool fieldTryInit( field_s *field, uint8_t width )
-{
-    if( width > FIELD_MAX_WIDTH )
-    {
-        return false;
-    }
-    field->width = width;
-    memset( field, 0, width );
-    return true;
-}
-
 void fieldDraw( const field_s *field )
 {
     my_puts(" ");       
-    for( uint32_t i = 0; i < field->width/2; i++ )
+    for( uint32_t i = 0; i < FIELD_WIDTH/2; i++ )
     {
         my_puts("  ");
     }
@@ -56,7 +44,7 @@ void fieldDraw( const field_s *field )
     for( uint32_t j = 0; j < 4; j++ )
     {
         my_puts("|");
-        for( uint32_t i = 0; i < field->width; i++ )
+        for( uint32_t i = 0; i < FIELD_WIDTH; i++ )
         {
              my_puts(charset[ fieldGetCell( field, j, i ) ]);
         }
@@ -64,7 +52,7 @@ void fieldDraw( const field_s *field )
     }    
 
     my_puts("\\");       
-    for( uint32_t i = 0; i < field->width; i++ )
+    for( uint32_t i = 0; i < FIELD_WIDTH; i++ )
     {
         my_puts("--");
     }
@@ -75,7 +63,7 @@ void fieldDraw( const field_s *field )
 
 void fieldDrawCursor( const field_s *field, uint8_t column, cell_e chip )
 {
-    if( !field || column >= field->width || 
+    if( !field || column >= FIELD_WIDTH || 
         (chip != CELL_PLAYER_1 && chip != CELL_PLAYER_2) )
         return;
 
@@ -88,7 +76,7 @@ void fieldDrawCursor( const field_s *field, uint8_t column, cell_e chip )
     my_puts( "{" ); 
     my_puts( charset[ chip ] );
     my_puts( "}" ); 
-    for( int i = column + 1; i < field->width; i++ )
+    for( int i = column + 1; i < FIELD_WIDTH; i++ )
     {
         my_puts("  ");
     }
@@ -98,7 +86,7 @@ void fieldDrawCursor( const field_s *field, uint8_t column, cell_e chip )
 
 step_e fieldPutChip( field_s *field, uint8_t column, cell_e chip )
 {
-    if( !field || column >= field->width ||
+    if( !field || column >= FIELD_WIDTH ||
         (chip != CELL_PLAYER_1 && chip != CELL_PLAYER_2) )
     {
         return STEP_NOT_AVAILABLE;
@@ -121,7 +109,7 @@ step_e fieldPutChip( field_s *field, uint8_t column, cell_e chip )
 
 static cell_e fieldGetCell( const field_s *field, uint8_t row, uint8_t column )
 {
-    if( !field || row >= 4 || column >= field->width )
+    if( !field || row >= 4 || column >= FIELD_WIDTH )
     {
         return CELL_UNDEFINED;
     } 
@@ -131,7 +119,7 @@ static cell_e fieldGetCell( const field_s *field, uint8_t row, uint8_t column )
 
 static void fieldSetCell( field_s *field, uint8_t row, uint8_t column, cell_e value )
 {
-    if( !field || row >= 4 || column >= field->width )
+    if( !field || row >= 4 || column >= FIELD_WIDTH )
     {
         return;
     } 
@@ -156,7 +144,7 @@ static void printChip( uint8_t row, uint8_t column, cell_e chip )
     my_puts( "\e[u" );
 }
 
-step_e checkScore( const field_s *field, uint8_t row, uint8_t column )
+static step_e checkScore( const field_s *field, uint8_t row, uint8_t column )
 {
     cell_e chip = fieldGetCell( field, row, column );
     //check horizontaly
