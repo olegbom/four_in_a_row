@@ -1,5 +1,6 @@
 #include "solver.h"
 #include "field.h"
+#include "stdio.h"
 
 static step_e SolverMove( solverState_s *state, const field_s *field, uint8_t column,
                    cell_e chip );
@@ -55,6 +56,12 @@ static step_e SolverMove( solverState_s *state, const field_s *field, uint8_t co
             if( number_of_dead_heat == FIELD_WIDTH )
             {
                 state->number_of_dead_heat++;
+                if( state->number_of_dead_heat % 10000000 == 0 )
+                {
+                    printf( "number_of_dead_heat %d\r\n", state->number_of_dead_heat );
+                    printf( "number_of_winnings_of_player_1 %d\r\n", state->number_of_winnings_of_player_1 );
+                    printf( "number_of_winnings_of_player_2 %d\r\n", state->number_of_winnings_of_player_2 );
+                }
             }
         }      
         break;

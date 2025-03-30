@@ -7,7 +7,7 @@
 
 /* --------------------------------- DEFINES -------------------------------- */
 
-#define FIELD_WIDTH (4)
+#define FIELD_WIDTH (5)
 
 #if FIELD_WIDTH > UINT8_MAX
 #error FIELD_MAX_WIDTH too big
