@@ -75,6 +75,7 @@ int thread_test_func( void *arg )
         
         thrd_sleep( &( struct timespec ){ .tv_nsec = 60 * 1000 * 1000 }, NULL );
         printf(".");
+        fflush( stdout );
     }
     return 0;
 }
