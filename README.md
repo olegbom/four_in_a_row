@@ -2,7 +2,7 @@
 
 ## About
 
-Classical logic game for two players. Written on C, work on Windows only 
+Classical logic game for two players. Written on C, work on Windows and Linux 
 (Requires ANSI escape control summort in your terminal emulator). 
 
 ## Build
