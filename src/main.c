@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "field.h"
 #include "solver.h"
+#include <threads.h>
 
 #ifdef _WIN32
 #include <fcntl.h>
@@ -63,16 +64,36 @@ char getche(void)
 
 #endif
 
+mtx_t mutex;
+
+
+int thread_test_func( void *arg )
+{
+    const bool *isThreadWork = (const bool *) arg;
+    while( *isThreadWork )
+    {
+        
+        thrd_sleep( &( struct timespec ){ .tv_nsec = 60 * 1000 * 1000 }, NULL );
+        printf(".");
+    }
+    return 0;
+}
+
 int main()
 {
-        
+    bool isThreadWork = true;
+    thrd_t t;
+    thrd_create( &t, thread_test_func, &isThreadWork );
+
     field_s f = {0};
 
     solverState_s state = CalculatePossibilities( &f );
   
     printSolverState( &state );
-
+    isThreadWork = false;
+    thrd_join( t, NULL );
     return 0;
+    
     fieldDraw( &f );
 
     uint8_t cursor_pos = 0;

@@ -20,8 +20,6 @@ solverState_s CalculatePossibilities( const field_s *field )
 static step_e SolverMove( solverState_s *state, const field_s *field, uint8_t column,
                    cell_e chip )
 {
-    
-    
     field_s copy = *field;
     step_e result = fieldPutChip( &copy, column, chip, false );
     switch( result )
