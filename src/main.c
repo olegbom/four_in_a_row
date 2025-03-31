@@ -101,15 +101,18 @@ int main()
             step_e result = fieldPutChip( &f, cursor_pos, chip, true ); 
             if( result == STEP_WIN )
             {
-                if( chip == CELL_PLAYER_1 )
-                    my_puts("PLAYER 1 WIN!\r\n");
-                else
-                    my_puts("PLAYER 2 WIN!\r\n");
+                printf( "PLAYER %d WIN!\r\n", chip );
                 break;
             }
             else if( result == STEP_NORMAL ) 
             {
-                chip = (chip == CELL_PLAYER_1) ? CELL_PLAYER_2 : CELL_PLAYER_1;
+                if( fieldIsFull( &f ) )
+                {
+                    printf( "DEAD HEAT\r\n" );
+                    break;
+                }
+                
+                chip = (cell_e)(CELL_PLAYER_2 + CELL_PLAYER_1 - chip);
             }
         }
 
