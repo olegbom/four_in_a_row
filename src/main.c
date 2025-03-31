@@ -70,9 +70,7 @@ int main()
 
     solverState_s state = CalculatePossibilities( &f );
   
-    printf( "number_of_dead_heat %d\r\n", state.number_of_dead_heat );
-    printf( "number_of_winnings_of_player_1 %d\r\n", state.number_of_winnings_of_player_1 );
-    printf( "number_of_winnings_of_player_2 %d\r\n", state.number_of_winnings_of_player_2 );
+    printSolverState( &state );
 
     return 0;
     fieldDraw( &f );

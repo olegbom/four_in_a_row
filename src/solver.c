@@ -19,13 +19,9 @@ solverState_s CalculatePossibilities( const field_s *field )
 
 static step_e SolverMove( solverState_s *state, const field_s *field, uint8_t column,
                    cell_e chip )
-{   
-    // if( !state || !field || column >= FIELD_WIDTH ||
-    //     ( chip != CELL_PLAYER_1 && chip != CELL_PLAYER_2 ) )
-    // {
-    //     return STEP_NOT_AVAILABLE;
-    // }     
-
+{
+    
+    
     field_s copy = *field;
     step_e result = fieldPutChip( &copy, column, chip, false );
     switch( result )
@@ -58,9 +54,7 @@ static step_e SolverMove( solverState_s *state, const field_s *field, uint8_t co
                 state->number_of_dead_heat++;
                 if( state->number_of_dead_heat % 10000000 == 0 )
                 {
-                    printf( "number_of_dead_heat %d\r\n", state->number_of_dead_heat );
-                    printf( "number_of_winnings_of_player_1 %d\r\n", state->number_of_winnings_of_player_1 );
-                    printf( "number_of_winnings_of_player_2 %d\r\n", state->number_of_winnings_of_player_2 );
+                    printSolverState( state );
                 }
             }
         }      
@@ -73,4 +67,9 @@ static step_e SolverMove( solverState_s *state, const field_s *field, uint8_t co
     return result;    
 } 
 
-
+void printSolverState( const solverState_s *state )
+{
+    printf( "number_of_dead_heat %llu\r\n", state->number_of_dead_heat );
+    printf( "number_of_winnings_of_player_1 %llu\r\n", state->number_of_winnings_of_player_1 );
+    printf( "number_of_winnings_of_player_2 %llu\r\n", state->number_of_winnings_of_player_2 );
+}
