@@ -70,11 +70,32 @@ mtx_t mutex;
 int thread_test_func( void *arg )
 {
     const bool *isThreadWork = (const bool *) arg;
+    const char *bubblesAnim[] = {".","o","O","@","*"," "};
+    const size_t bubblesAnimLength = sizeof( bubblesAnim ) / sizeof( bubblesAnim[0] );
+    enum {
+        NUMBER_OF_BUBBLES = FIELD_WIDTH * 2 + 2
+    };
+    uint8_t counters[NUMBER_OF_BUBBLES] = { 0 };
     while( *isThreadWork )
     {
         
         thrd_sleep( &( struct timespec ){ .tv_nsec = 60 * 1000 * 1000 }, NULL );
-        printf(".");
+        for ( size_t i = 0; i < NUMBER_OF_BUBBLES; i++ )
+        {
+            if ( counters[i] < bubblesAnimLength - 1 )
+                counters[i]++;
+            else
+            {
+                if ( ( rand() & 0x3f ) == 0 )
+                    counters[i] = 0;
+            }
+        }
+        printf( "\e[s\e[7A" );
+        for ( size_t i = 0; i < NUMBER_OF_BUBBLES; i++ )
+        {
+            printf( "%s", bubblesAnim[counters[i]] );
+        }
+        printf( "\e[u" );
         fflush( stdout );
     }
     return 0;
@@ -82,20 +103,18 @@ int thread_test_func( void *arg )
 
 int main()
 {
+    field_s f = {0};
+
+    // solverState_s state = CalculatePossibilities( &f );
+  
+    // printSolverState( &state );
+    
+    printf( "\r\n" );
+    fieldDraw( &f );
+
     bool isThreadWork = true;
     thrd_t t;
     thrd_create( &t, thread_test_func, &isThreadWork );
-
-    field_s f = {0};
-
-    solverState_s state = CalculatePossibilities( &f );
-  
-    printSolverState( &state );
-    isThreadWork = false;
-    thrd_join( t, NULL );
-    // return 0;
-    
-    fieldDraw( &f );
 
     uint8_t cursor_pos = 0;
     cell_e chip = CELL_PLAYER_1;
@@ -139,6 +158,8 @@ int main()
         fieldDrawCursor( &f, cursor_pos, chip );
     }
     
+    isThreadWork = false;
+    thrd_join( t, NULL );
     printf("Goodby!\r\n");
     return 0;
 }
