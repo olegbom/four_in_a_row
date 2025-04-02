@@ -40,5 +40,5 @@ void fieldDraw( const field_s *field );
 void fieldDrawCursor( const field_s *field, uint8_t column, cell_e chip );
 step_e fieldPutChip( field_s *field, uint8_t column, cell_e chip, bool is_print );
 bool fieldIsFull( const field_s *field );
-int my_puts( const char *s );
+
 

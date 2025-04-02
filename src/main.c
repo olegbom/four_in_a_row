@@ -93,7 +93,7 @@ int main()
     printSolverState( &state );
     isThreadWork = false;
     thrd_join( t, NULL );
-    return 0;
+    // return 0;
     
     fieldDraw( &f );
 
@@ -139,6 +139,6 @@ int main()
         fieldDrawCursor( &f, cursor_pos, chip );
     }
     
-    my_puts("Goodby!\r\n");
+    printf("Goodby!\r\n");
     return 0;
 }

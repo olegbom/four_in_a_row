@@ -27,43 +27,33 @@ static step_e checkScore( const field_s *field, uint8_t row, uint8_t column, cel
 
 /* -------------------------------- TYPEDEFS -------------------------------- */
 
-int my_puts( const char *s )
-{
-    for( size_t i = 0; s[i]; ++i )
-    {
-        if( putchar( s[i] ) == EOF )
-            return EOF;
-    }
-    return 0;
-}
-
 void fieldDraw( const field_s *field )
 {
-    my_puts(" ");       
+    printf(" ");       
     for( uint32_t i = 0; i < FIELD_WIDTH/2; i++ )
     {
-        my_puts("  ");
+        printf("  ");
     }
 
-    my_puts("\r\n");       
+    printf("\r\n");       
     
     for( uint32_t j = 0; j < 4; j++ )
     {
-        my_puts("|");
+        printf("|");
         for( uint32_t i = 0; i < FIELD_WIDTH; i++ )
         {
-             my_puts(Charset[ fieldGetCell( field, j, i ) ]);
+             printf( "%s", Charset[ fieldGetCell( field, j, i ) ]);
         }
-        my_puts("|\r\n");
+        printf("|\r\n");
     }    
 
-    my_puts("\\");       
+    printf("\\");       
     for( uint32_t i = 0; i < FIELD_WIDTH; i++ )
     {
-        my_puts("--");
+        printf("--");
     }
 
-    my_puts("/\r\n");
+    printf("/\r\n");
     fieldDrawCursor( field, 0, CELL_PLAYER_1 );
 }
 
@@ -73,21 +63,7 @@ void fieldDrawCursor( const field_s *field, uint8_t column, cell_e chip )
         (chip != CELL_PLAYER_1 && chip != CELL_PLAYER_2) )
         return;
 
-    my_puts( "\e[s\e[6A" ); 
-    for( int i = 0; i < column; i++ )
-    {
-        my_puts("  ");
-    }
-    
-    my_puts( "{" ); 
-    my_puts( Charset[ chip ] );
-    my_puts( "}" ); 
-    for( int i = column + 1; i < FIELD_WIDTH; i++ )
-    {
-        my_puts("  ");
-    }
-    
-    my_puts( "\e[u" );
+    printf( "\e[s\e[6A%*s{%s}%*s\e[u", column * 2, "", Charset[chip], ( FIELD_WIDTH - column ) * 2, "" );
 }
 
 step_e fieldPutChip( field_s *field, uint8_t column, cell_e chip, bool is_print )
