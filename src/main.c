@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "field.h"
 #include "solver.h"
+#include "ansi_codes.h"
 #include <threads.h>
 
 #ifdef _WIN32
@@ -72,8 +73,8 @@ int thread_test_func( void *arg )
     const bool *isThreadWork = (const bool *) arg;
     const char *bubblesAnim[] = {
         ".",
-     "o",
-        "O",
+        "o",
+       ANSI_COLOR( "O", ANSI_HI_NORMAL, ANSI_RED ),
         "@",
         "*",
         " " };
