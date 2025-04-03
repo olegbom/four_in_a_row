@@ -72,12 +72,12 @@ int thread_test_func( void *arg )
 {
     const bool *isThreadWork = (const bool *) arg;
     const char *bubblesAnim[] = {
-        ".",
-        "o",
+       ANSI_COLOR( ".", ANSI_HI_NORMAL, ANSI_WHITE ),
+       ANSI_COLOR( "o", ANSI_HI_NORMAL, ANSI_YELLOW ),
        ANSI_COLOR( "O", ANSI_HI_NORMAL, ANSI_RED ),
-        "@",
-        "*",
-        " " };
+       ANSI_COLOR( "@", ANSI_HI_BOLD, ANSI_RED ),
+       ANSI_COLOR( "*", ANSI_NORMAL, ANSI_WHITE ),
+       " " };
     const size_t bubblesAnimLength = sizeof( bubblesAnim ) / sizeof( bubblesAnim[0] );
     enum {
         NUMBER_OF_BUBBLES = FIELD_WIDTH * 2 + 2
@@ -91,7 +91,7 @@ int thread_test_func( void *arg )
         {
             if ( counters[i] < bubblesAnimLength - 1 )
                 counters[i]++;
-            if ( ( rand() & 0x0f ) == 0 )
+            if ( ( rand() & 0x07 ) == 0 )
                 counters[i] = 0;
         }
         printf( "\e[s\e[7A" );
