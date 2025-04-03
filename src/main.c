@@ -70,7 +70,13 @@ mtx_t mutex;
 int thread_test_func( void *arg )
 {
     const bool *isThreadWork = (const bool *) arg;
-    const char *bubblesAnim[] = {".","o","O","@","*"," "};
+    const char *bubblesAnim[] = {
+        ".",
+     "o",
+        "O",
+        "@",
+        "*",
+        " " };
     const size_t bubblesAnimLength = sizeof( bubblesAnim ) / sizeof( bubblesAnim[0] );
     enum {
         NUMBER_OF_BUBBLES = FIELD_WIDTH * 2 + 2
@@ -84,11 +90,8 @@ int thread_test_func( void *arg )
         {
             if ( counters[i] < bubblesAnimLength - 1 )
                 counters[i]++;
-            else
-            {
-                if ( ( rand() & 0x3f ) == 0 )
-                    counters[i] = 0;
-            }
+            if ( ( rand() & 0x0f ) == 0 )
+                counters[i] = 0;
         }
         printf( "\e[s\e[7A" );
         for ( size_t i = 0; i < NUMBER_OF_BUBBLES; i++ )
