@@ -51,7 +51,7 @@ char getch_(int echo)
   return ch;
 }
 
-/* Read 1 character without echo */
+ /* Read 1 character without echo */
 char getch(void) 
 {
   return getch_(0);
@@ -113,15 +113,18 @@ int main()
   
     // printSolverState( &state );
     
+    // return 0;
     printf( "\r\n" );
     fieldDraw( &f );
 
-    bool isThreadWork = true;
-    thrd_t t;
-    thrd_create( &t, thread_test_func, &isThreadWork );
+    // bool isThreadWork = true;
+    // thrd_t t;
+    // thrd_create( &t, thread_test_func, &isThreadWork );
 
     uint8_t cursor_pos = 0;
-    cell_e chip = CELL_PLAYER_1;
+    cell_e chip = CELL_PLAYER_2;
+
+    fieldDrawCursor( &f, cursor_pos, chip );
     while(true)
     {
         int c = getch();
@@ -141,29 +144,43 @@ int main()
         }
         else if( c == ' ' )
         {
-            step_e result = fieldPutChip( &f, cursor_pos, chip, true ); 
-            if( result == STEP_WIN )
+            if( fieldMoveAvailable( &f, cursor_pos ) )
             {
-                printf( "PLAYER %d WIN!\r\n", chip );
-                break;
-            }
-            else if( result == STEP_NORMAL ) 
-            {
-                if( fieldIsFull( &f ) )
+                uint8_t computer_move = CalculateBestMove( &f );
+                turn_e turn = fieldTurn( &f, computer_move, cursor_pos, true );
+                if( turn == TURN_NORMAL )
+                {
+                    if( fieldIsFull( &f ) )
+                    {
+                        printf( "DEAD HEAT\r\n" );
+                        break;
+                    }
+
+                    chip = CELL_PLAYER_2;
+                }
+                else if( turn == TURN_WIN_PLAYER_1 )
+                {
+                    printf( "PLAYER 1 WIN!\r\n" );
+                    break;
+                }
+                else if( turn == TURN_WIN_PLAYER_2 )
+                {
+                    printf( "PLAYER 2 WIN!\r\n" );
+                    break;
+                }
+                else if( turn == TURN_DEAD_HEAT )
                 {
                     printf( "DEAD HEAT\r\n" );
                     break;
                 }
-                
-                chip = (cell_e)(CELL_PLAYER_2 + CELL_PLAYER_1 - chip);
             }
         }
 
         fieldDrawCursor( &f, cursor_pos, chip );
     }
     
-    isThreadWork = false;
-    thrd_join( t, NULL );
+    // isThreadWork = false;
+    // thrd_join( t, NULL );
     printf("Goodby!\r\n");
     return 0;
 }

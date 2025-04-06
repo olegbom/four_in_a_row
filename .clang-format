@@ -1,5 +1,6 @@
 ﻿---
 BasedOnStyle: Microsoft
+SpaceBeforeParens: Never
 SpacesInParentheses: 'true'
 TabWidth: '4'
 UseTab: Never

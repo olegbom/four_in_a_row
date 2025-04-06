@@ -4,13 +4,19 @@
 #include "field.h"
 #include <stdint.h>
 #include <stdio.h>
+#include "ansi_codes.h"
 
 /* --------------------------------- DEFINES -------------------------------- */
 
 
 /* --------------------------------- CONSTS --------------------------------- */
 
-static const char *Charset[4] = {"  ", "\e[0;31m()\e[0m", "\e[0;36m<>\e[0m", "  "};
+static const char *Charset[4] = {
+    "  ", 
+    ANSI_COLOR("()", ANSI_NORMAL, ANSI_RED), 
+    ANSI_COLOR("<>", ANSI_NORMAL, ANSI_CYAN), 
+    ANSI_COLOR("><", ANSI_NORMAL, ANSI_RED), 
+};
 
 static const uint8_t Masks[3] = {
     0, 
@@ -66,14 +72,13 @@ void fieldDrawCursor( const field_s *field, uint8_t column, cell_e chip )
     printf( "\e[s\e[6A%*s{%s}%*s\e[u", column * 2, "", Charset[chip], ( FIELD_WIDTH - column ) * 2, "" );
 }
 
+bool fieldMoveAvailable( const field_s *field, uint8_t column )
+{
+    return fieldGetCell( field, 0, column ) == CELL_EMPTY;
+}
+
 step_e fieldPutChip( field_s *field, uint8_t column, cell_e chip, bool is_print )
 {
-    // if( !field || column >= FIELD_WIDTH ||
-    //     (chip != CELL_PLAYER_1 && chip != CELL_PLAYER_2) )
-    // {
-    //     return STEP_NOT_AVAILABLE;
-    // }
-
     for( uint8_t i = 0; i < 4; i++ )
     {
         uint8_t row = 3 - i;
@@ -84,12 +89,52 @@ step_e fieldPutChip( field_s *field, uint8_t column, cell_e chip, bool is_print 
             {
                 printChip( row, column, chip );
             }
-            
+
             return checkScore( field, row, column, chip );
         }
     }
     
     return STEP_NOT_AVAILABLE;
+}
+
+turn_e fieldTurn( field_s *field, uint8_t column_player_1, uint8_t column_player_2, bool is_print )
+{
+    // if( !field || column >= FIELD_WIDTH ||
+    //     (chip != CELL_PLAYER_1 && chip != CELL_PLAYER_2) )
+    // {
+    //     return STEP_NOT_AVAILABLE;
+    // }
+
+    if( fieldGetCell( field, 0, column_player_1 ) != CELL_EMPTY ||
+        fieldGetCell( field, 0, column_player_2 ) != CELL_EMPTY )
+    {
+        return TURN_NOT_AVAILABLE;
+    }
+
+    if( column_player_1 == column_player_2 )
+    {
+        fieldPutChip( field, column_player_1, CELL_BOTH, is_print );
+        return TURN_NORMAL;
+    }
+
+    step_e player_1_step = fieldPutChip( field, column_player_1, CELL_PLAYER_1, is_print );
+    step_e player_2_step = fieldPutChip( field, column_player_2, CELL_PLAYER_2, is_print );
+    if( player_1_step == STEP_WIN && player_2_step == STEP_WIN )
+    {
+        return TURN_DEAD_HEAT;
+    }
+
+    if( player_1_step == STEP_WIN )
+    {
+        return TURN_WIN_PLAYER_1;
+    }
+
+    if( player_2_step == STEP_WIN )
+    {
+        return TURN_WIN_PLAYER_2;
+    }
+    
+    return TURN_NORMAL;
 }
 
 bool fieldIsFull( const field_s *field )
@@ -172,15 +217,15 @@ static step_e checkScore( const field_s *field, uint8_t row, uint8_t column, cel
         fieldGetCell( field, 0, column - row ) == chip &&
         fieldGetCell( field, 1, column - row + 1 ) == chip &&
         fieldGetCell( field, 2, column - row + 2 ) == chip &&
-        fieldGetCell( field, 3, column - row + 3 ) == chip )
+        fieldGetCell( field, 3, column - row + 3 )  == chip )
         return STEP_WIN;
             
     if( (uint8_t)(column + row) < FIELD_WIDTH &&
         (uint8_t)(column + row - 3) < FIELD_WIDTH &&
-        fieldGetCell( field, 0, column + row ) == chip &&
+        fieldGetCell( field, 0, column + row )  == chip &&
         fieldGetCell( field, 1, column + row - 1 ) == chip &&
         fieldGetCell( field, 2, column + row - 2 ) == chip &&
-        fieldGetCell( field, 3, column + row - 3 ) == chip )
+        fieldGetCell( field, 3, column + row - 3 )  == chip )
         return STEP_WIN;
             
     return STEP_NORMAL;
