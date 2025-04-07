@@ -23,7 +23,7 @@ uint8_t CalculateBestMove( const field_s *field )
     }
 
     const double coeff[MAX_DEPTH] = {1000, 100, 10, 1};
-    double bestValue = -1.0;
+    double bestValue = -1000.0;
     uint8_t bestIndex = 0;
     for( uint8_t i = 0; i < FIELD_WIDTH; i++ )
     {
