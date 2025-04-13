@@ -22,45 +22,49 @@ int getch()
 static struct termios old, current;
 
 /* Initialize new terminal i/o settings */
-void initTermios(int echo) 
+void initTermios( int echo )
 {
-  tcgetattr(0, &old); /* grab old terminal i/o settings */
-  current = old; /* make new settings same as old settings */
-  current.c_lflag &= ~ICANON; /* disable buffered i/o */
-  if (echo) {
-      current.c_lflag |= ECHO; /* set echo mode */
-  } else {
-      current.c_lflag &= ~ECHO; /* set no echo mode */
-  }
-  tcsetattr(0, TCSANOW, &current); /* use these new terminal i/o settings now */
+    tcgetattr( 0, &old );       /* grab old terminal i/o settings */
+    current = old;              /* make new settings same as old settings */
+    current.c_lflag &= ~ICANON; /* disable buffered i/o */
+    if( echo )
+    {
+        current.c_lflag |= ECHO; /* set echo mode */
+    }
+    else
+    {
+        current.c_lflag &= ~ECHO; /* set no echo mode */
+    }
+
+    tcsetattr( 0, TCSANOW, &current ); /* use these new terminal i/o settings now */
 }
 
 /* Restore old terminal i/o settings */
-void resetTermios(void) 
+void resetTermios( void )
 {
-  tcsetattr(0, TCSANOW, &old);
+    tcsetattr( 0, TCSANOW, &old );
 }
 
 /* Read 1 character - echo defines echo mode */
-char getch_(int echo) 
+char getch_( int echo )
 {
-  char ch;
-  initTermios(echo);
-  ch = getchar();
-  resetTermios();
-  return ch;
+    char ch;
+    initTermios( echo );
+    ch = getchar();
+    resetTermios();
+    return ch;
 }
 
  /* Read 1 character without echo */
-char getch(void) 
+char getch( void )
 {
-  return getch_(0);
+    return getch_( 0 );
 }
 
 /* Read 1 character with echo */
-char getche(void) 
+char getche( void )
 {
-  return getch_(1);
+    return getch_( 1 );
 }
 
 #endif
@@ -94,11 +98,13 @@ int thread_test_func( void *arg )
             if ( ( rand() & 0x07 ) == 0 )
                 counters[i] = 0;
         }
+
         printf( "\e[s\e[7A" );
         for ( size_t i = 0; i < NUMBER_OF_BUBBLES; i++ )
         {
             printf( "%s", bubblesAnim[counters[i]] );
         }
+
         printf( "\e[u" );
         fflush( stdout );
     }
