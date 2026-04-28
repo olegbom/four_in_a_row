@@ -13,9 +13,9 @@
 
 static const char *Charset[4] = {
     "  ", 
-    ANSI_COLOR("()", ANSI_NORMAL, ANSI_RED), 
+    ANSI_COLOR("()", ANSI_NORMAL, ANSI_YELLOW), 
     ANSI_COLOR("<>", ANSI_NORMAL, ANSI_CYAN), 
-    ANSI_COLOR("><", ANSI_NORMAL, ANSI_RED), 
+    ANSI_COLOR("[]", ANSI_NORMAL, ANSI_RED), 
 };
 
 static const uint8_t Masks[3] = {
