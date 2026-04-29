@@ -6,6 +6,16 @@
 #include <conio.h>
 #include <windows.h>
 
+void setConsoleUTF8();
+
+#    ifdef CROSS_GETCH_IMPLEMENTATION
+
+void setConsoleUTF8()
+{
+    SetConsoleOutputCP(CP_UTF8);
+}
+
+#    endif //CROSS_GETCH_IMPLEMENTATION
 #endif //_WIN32
 
 #ifdef __linux__
@@ -15,8 +25,11 @@
 
 char _getch( void );
 char getche( void );
+void setConsoleUTF8();
 
 #ifdef CROSS_GETCH_IMPLEMENTATION
+
+void setConsoleUTF8() {}
 
 static struct termios old, current;
 

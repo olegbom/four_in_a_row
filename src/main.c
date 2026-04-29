@@ -1,13 +1,17 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <threads.h>
+
 #include "field.h"
 #include "solver.h"
+#include "field3d.h"
 #include "ansi_codes.h"
-#include <threads.h>
+
 #define CROSS_GETCH_IMPLEMENTATION
 #include "cross_getch.h"
 
-mtx_t mutex;
 
+mtx_t mutex;
 
 int thread_animation( void *arg )
 {
@@ -77,8 +81,6 @@ int thread_compute_move( void *arg )
         mtx_lock( &share->mtx );
         while( !share->is_compute_required && share->is_thread_work)
         {
-            // cnd_timedwait( &share->compute_condition, &share->mtx,
-            //                &(struct timespec){.tv_nsec = 600 * 1000 * 1000} );
             cnd_wait( &share->compute_condition, &share->mtx );
         }
         
@@ -197,6 +199,24 @@ int thread_ui( void *arg )
 
 int main()
 {
+    srand(time(NULL));
+    
+    setConsoleUTF8();
+
+    printf( "\e[?25l" );
+    printf( "\e[?47h" );
+    printf( "\e[2J" );
+    field3d_s f3d = { 0x123456789ABCDEFull, 0x0};
+    // uint8_t *ptr = (uint8_t *)&f3d;
+    // for( size_t i = 0; i < sizeof( field3d_s ); i++ )
+    // {
+    //     ptr[i] = (uint8_t)rand();
+    // }
+    //         7   |   6   |   5   |   4   |   3   |   2   |   1   |   0   |   
+    f3d.a =  0b1000000000000000000000000000000000000000000000000000000000000000ull;
+
+    field3dTestMasksVisual();
+    return 0;
 
     fieldShareObject_s share = {0};
     fieldShareObject_init( &share );
@@ -207,7 +227,7 @@ int main()
 
     printf( "\r\n" );
     fieldDraw( &share.field );
-
+    
     thrd_t t_anim_handle;
     thrd_create( &t_anim_handle, thread_animation, &share.is_thread_work );
 
@@ -221,6 +241,7 @@ int main()
     thrd_join( t_ui_handle, NULL );
     thrd_join( t_calculate_move_handle, NULL );
     
-    printf("Goodby!\r\n");
+    printf( "\e[?47l" );
+
     return 0;
 }
