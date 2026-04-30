@@ -243,15 +243,86 @@ const uint64_t win_masks[] = {
     0x0008004002001000,
 };
 
+typedef struct
+{
+    uint64_t m[7];
+    size_t  size;
+} cellWinMasks_s;
+
+static cellWinMasks_s cellWinMasks[64] = {0};
+
+static void calculateCellWinMasksCounts()
+{
+    for(size_t i = 0; i < sizeof(cellWinMasks)/sizeof(cellWinMasks[0]); i++)
+    {
+        cellWinMasks[i] = (cellWinMasks_s) {0};
+        uint64_t mask = 1ull << i;
+        for(size_t j = 0; j < NUMBER_OF_WIN_MASKS; j++)
+        {
+            if( (mask & win_masks[j]) != 0 )
+            {
+                cellWinMasks[i].m[cellWinMasks[i].size] = win_masks[j];
+                cellWinMasks[i].size++;
+            }
+        }
+        printf("%zu", cellWinMasks[i].size);
+    }
+
+}
+
+const uint64_t moves_masks[16] = {
+    //FEDCBA9876543210
+    0x0001000100010001,
+    0x0002000200020002,
+    0x0004000400040004,
+    0x0008000800080008,
+    //FEDCBA9876543210
+    0x0010001000100010,
+    0x0020002000200020,
+    0x0040004000400040,
+    0x0080008000800080,
+    //FEDCBA9876543210
+    0x0100010001000100,
+    0x0200020002000200,
+    0x0400040004000400,
+    0x0800080008000800,
+    //FEDCBA9876543210
+    0x1000100010001000,
+    0x2000200020002000,
+    0x4000400040004000,
+    0x8000800080008000,
+};
+
+bool field3dMoveAvailable( field3d_s f, uint8_t column, uint8_t row )
+{
+    if( column > 3 && row > 3 )
+        return false;
+
+    size_t i = column + row * 4 + 48;
+    uint64_t isNotEmpty = f.a | f.b;
+    return (isNotEmpty & (1ull << i)) != 0;
+}
 
 void field3dTestMasksVisual()
 {
+    enum {
+        FIELD_3D_PRINT = 0,
+        CELL_WIN_MASKS_COUNTS,
+    } state = FIELD_3D_PRINT;
 
     size_t mask_index = NUMBER_OF_WIN_MASKS - 1;
     while(1)
     {
         printf( "\e[H" );
-        field3dPrint( ( field3d_s ){ .a = win_masks[mask_index], .b = 0 } );
+        switch (state)
+        {
+        case FIELD_3D_PRINT:
+            field3dPrint( ( field3d_s ){ .a = win_masks[mask_index], .b = 0 } );
+            break;
+        case CELL_WIN_MASKS_COUNTS:
+            calculateCellWinMasksCounts();
+            break;
+        }
 
         int c = _getch();
         if( c == 'a' )
@@ -268,13 +339,23 @@ void field3dTestMasksVisual()
         {
             break;
         }
+        else if (c == '1')
+        {
+            state = FIELD_3D_PRINT;
+        }
+        else if (c == '2')
+        {
+            state = CELL_WIN_MASKS_COUNTS;
+        }
     }
+
+    
 }
 
 
 void field3dPrint(field3d_s f)
 {
-    printf("0xFEDCBA9876543210\r\n");
+    printf("  FEDCBA9876543210\r\n");
     printf("0x%016llX\r\n", f.a);
     for( size_t c_column = 0; c_column < 4; c_column++ )
     {

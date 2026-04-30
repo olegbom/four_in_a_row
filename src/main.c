@@ -203,8 +203,6 @@ int main()
     
     setConsoleUTF8();
 
-    printf( "\e[?25l" );
-    printf( "\e[?47h" );
     printf( "\e[2J" );
     field3d_s f3d = { 0x123456789ABCDEFull, 0x0};
     // uint8_t *ptr = (uint8_t *)&f3d;
@@ -241,7 +239,5 @@ int main()
     thrd_join( t_ui_handle, NULL );
     thrd_join( t_calculate_move_handle, NULL );
     
-    printf( "\e[?47l" );
-
     return 0;
 }
