@@ -7,5 +7,5 @@ typedef struct {
 } field3d_s;
 
 void field3dTestMasksVisual();
-bool field3dMoveAvailable( field3d_s f, uint8_t column, uint8_t row );
+bool field3dMoveAvailable( field3d_s f, uint8_t tube );
 void field3dPrint(field3d_s f);

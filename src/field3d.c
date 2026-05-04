@@ -293,14 +293,88 @@ const uint64_t moves_masks[16] = {
     0x8000800080008000,
 };
 
-bool field3dMoveAvailable( field3d_s f, uint8_t column, uint8_t row )
+static inline bool moveAvailable( field3d_s f, uint8_t tube )
 {
-    if( column > 3 && row > 3 )
+    size_t i = tube + 48;
+    uint64_t isNotEmpty = f.a | f.b;
+    return (isNotEmpty & (1ull << i)) == 0;
+}
+
+bool field3dMoveAvailable( field3d_s f, uint8_t tube )
+{
+    if( tube > 15 )
         return false;
 
-    size_t i = column + row * 4 + 48;
-    uint64_t isNotEmpty = f.a | f.b;
-    return (isNotEmpty & (1ull << i)) != 0;
+    return moveAvailable( f, tube );
+}
+
+static inline bool tryMove( uint64_t *half, uint64_t isNotEmpty,  uint8_t tube)
+{
+    bool result = true;
+    uint64_t mask = (1ull << (tube));
+    if( (isNotEmpty & mask) == 0 )
+    {
+        *half |= mask;
+    }
+    else if( ( isNotEmpty & ( mask << 16 ) ) == 0 )
+    {
+        *half |= (mask << 16);
+    }
+    else if( ( isNotEmpty & ( mask << 32 ) ) == 0 )
+    {
+        *half |= (mask << 32);
+    }
+    else if( ( isNotEmpty & ( mask << 48 ) ) == 0 )
+    {
+        *half |= (mask << 48);
+    }
+    else
+    {
+        result = false;
+    }
+    return result;
+}
+
+bool tryField3dMove( field3d_s *f, uint8_t player1_tube, uint8_t player2_tube )
+{
+    field3d_s copy = *f;
+    uint64_t isNotEmpty = copy.a | copy.b;
+    bool isGood = tryMove(&f->a, isNotEmpty, player1_tube);
+
+
+    if( isGood ) do
+    {
+        uint64_t mask = (1ull << (player2_tube));
+        if( (isNotEmpty & mask) == 0 ) {
+            copy.b |= mask;
+            break;
+        }
+        mask <<= 16;
+        if( (isNotEmpty & mask) == 0 ) {
+            copy.b |= mask;
+            break;
+        }
+        mask <<= 16;
+        if( (isNotEmpty & mask) == 0 ) {
+            copy.b |= mask;
+            break;
+        }
+        mask <<= 16;
+        if( (isNotEmpty & mask) == 0 ) {
+            copy.b |= mask;
+            break;
+        }
+
+        isGood = false;
+    }
+    while(0);
+
+    if( isGood )
+    {
+        *f = copy;
+    }
+    
+    return isGood;
 }
 
 void field3dTestMasksVisual()
@@ -314,6 +388,7 @@ void field3dTestMasksVisual()
     while(1)
     {
         printf( "\e[H" );
+        printf( "\e[?25l" );
         switch (state)
         {
         case FIELD_3D_PRINT:
@@ -323,6 +398,8 @@ void field3dTestMasksVisual()
             calculateCellWinMasksCounts();
             break;
         }
+
+        printf( "\e[?25h" );
 
         int c = _getch();
         if( c == 'a' )
