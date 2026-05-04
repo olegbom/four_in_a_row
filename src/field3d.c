@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <inttypes.h>
 
 #include "ansi_codes.h"
 #include "field.h"
@@ -432,8 +433,8 @@ void field3dTestMasksVisual()
 
 void field3dPrint(field3d_s f)
 {
-    printf("  FEDCBA9876543210\r\n");
-    printf("0x%016llX\r\n", f.a);
+    printf( "  FEDCBA9876543210\r\n" );
+    printf( "0x%016" PRIX64 "\r\n", f.a );
     for( size_t c_column = 0; c_column < 4; c_column++ )
     {
         printf( "|              " );
