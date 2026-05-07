@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <inttypes.h>
 
 #include "ansi_codes.h"
@@ -48,7 +49,7 @@ const uint8_t cell_indent[CELL_WIDTH * CELL_HEIGHT] = {
 
 const borderType_e cell_border_type[CELL_WIDTH * CELL_HEIGHT] = {
     TL HB HB HB HB HB HB HB HB HB HB HB HB TR
-    VB SP TL HB HB HB HB HB HB HB HB TR SP VB    
+    VB SP TL HB HB HB HB HB HB HB HB TR SP VB
     VB SP VB SP TL HB HB HB HB TR SP VB SP VB
     VB SP VB SP VB SP CL CR SP VB SP VB SP VB
     VB SP VB SP BL HB HB HB HB BR SP VB SP VB
@@ -96,15 +97,15 @@ const border_s Player1Borders = {
 
 const border_s Player2Borders = {
     .s = {
-        [BORDER_TYPE_CORNER_TOP_LEFT]     = ANSI_COLOR("╭", ANSI_NORMAL, ANSI_CYAN),
-        [BORDER_TYPE_CORNER_TOP_RIGHT]    = ANSI_COLOR("╮", ANSI_NORMAL, ANSI_CYAN),
-        [BORDER_TYPE_CORNER_BOTTOM_LEFT]  = ANSI_COLOR("╰", ANSI_NORMAL, ANSI_CYAN),
-        [BORDER_TYPE_CORNER_BOTTOM_RIGHT] = ANSI_COLOR("╯", ANSI_NORMAL, ANSI_CYAN),
-        [BORDER_TYPE_HORIZONTAL_BAR]      = ANSI_COLOR("─", ANSI_NORMAL, ANSI_CYAN),
-        [BORDER_TYPE_VERTICAL_BAR]        = ANSI_COLOR("│", ANSI_NORMAL, ANSI_CYAN),
-        [BORDER_TYPE_CENTER_LEFT]         = ANSI_COLOR("(", ANSI_NORMAL, ANSI_CYAN),
-        [BORDER_TYPE_CENTER_RIGHT]        = ANSI_COLOR(")", ANSI_NORMAL, ANSI_CYAN),
-        [BORDER_TYPE_SPACE]               = ANSI_COLOR(" ", ANSI_NORMAL, ANSI_CYAN),
+        [BORDER_TYPE_CORNER_TOP_LEFT]     = ANSI_COLOR("╭", ANSI_NORMAL, ANSI_BLUE),
+        [BORDER_TYPE_CORNER_TOP_RIGHT]    = ANSI_COLOR("╮", ANSI_NORMAL, ANSI_BLUE),
+        [BORDER_TYPE_CORNER_BOTTOM_LEFT]  = ANSI_COLOR("╰", ANSI_NORMAL, ANSI_BLUE),
+        [BORDER_TYPE_CORNER_BOTTOM_RIGHT] = ANSI_COLOR("╯", ANSI_NORMAL, ANSI_BLUE),
+        [BORDER_TYPE_HORIZONTAL_BAR]      = ANSI_COLOR("─", ANSI_NORMAL, ANSI_BLUE),
+        [BORDER_TYPE_VERTICAL_BAR]        = ANSI_COLOR("│", ANSI_NORMAL, ANSI_BLUE),
+        [BORDER_TYPE_CENTER_LEFT]         = ANSI_COLOR("(", ANSI_NORMAL, ANSI_BLUE),
+        [BORDER_TYPE_CENTER_RIGHT]        = ANSI_COLOR(")", ANSI_NORMAL, ANSI_BLUE),
+        [BORDER_TYPE_SPACE]               = ANSI_COLOR(" ", ANSI_NORMAL, ANSI_BLUE),
     }
 };
 
@@ -119,6 +120,20 @@ const border_s BothBorders = {
       [BORDER_TYPE_CENTER_LEFT]         = ANSI_COLOR("#", ANSI_NORMAL, ANSI_RED),
       [BORDER_TYPE_CENTER_RIGHT]        = ANSI_COLOR("#", ANSI_NORMAL, ANSI_RED),
       [BORDER_TYPE_SPACE]               = ANSI_COLOR(" ", ANSI_NORMAL, ANSI_RED),
+    }
+};
+
+const border_s CursorBorders = {
+    .s = {
+      [BORDER_TYPE_CORNER_TOP_LEFT]     = ANSI_COLOR("╭", ANSI_NORMAL, ANSI_CYAN),
+      [BORDER_TYPE_CORNER_TOP_RIGHT]    = ANSI_COLOR("╮", ANSI_NORMAL, ANSI_CYAN),
+      [BORDER_TYPE_CORNER_BOTTOM_LEFT]  = ANSI_COLOR("╰", ANSI_NORMAL, ANSI_CYAN),
+      [BORDER_TYPE_CORNER_BOTTOM_RIGHT] = ANSI_COLOR("╯", ANSI_NORMAL, ANSI_CYAN),
+      [BORDER_TYPE_HORIZONTAL_BAR]      = ANSI_COLOR("┄", ANSI_NORMAL, ANSI_CYAN),
+      [BORDER_TYPE_VERTICAL_BAR]        = ANSI_COLOR("┆", ANSI_NORMAL, ANSI_CYAN),
+      [BORDER_TYPE_CENTER_LEFT]         = ANSI_COLOR(">", ANSI_NORMAL, ANSI_CYAN),
+      [BORDER_TYPE_CENTER_RIGHT]        = ANSI_COLOR("<", ANSI_NORMAL, ANSI_CYAN),
+      [BORDER_TYPE_SPACE]               = ANSI_COLOR(" ", ANSI_NORMAL, ANSI_CYAN),
     }
 };
 
@@ -340,35 +355,11 @@ bool tryField3dMove( field3d_s *f, uint8_t player1_tube, uint8_t player2_tube )
 {
     field3d_s copy = *f;
     uint64_t isNotEmpty = copy.a | copy.b;
-    bool isGood = tryMove(&f->a, isNotEmpty, player1_tube);
-
-
-    if( isGood ) do
+    bool isGood = tryMove(&copy.a, isNotEmpty, player1_tube);
+    if( isGood )
     {
-        uint64_t mask = (1ull << (player2_tube));
-        if( (isNotEmpty & mask) == 0 ) {
-            copy.b |= mask;
-            break;
-        }
-        mask <<= 16;
-        if( (isNotEmpty & mask) == 0 ) {
-            copy.b |= mask;
-            break;
-        }
-        mask <<= 16;
-        if( (isNotEmpty & mask) == 0 ) {
-            copy.b |= mask;
-            break;
-        }
-        mask <<= 16;
-        if( (isNotEmpty & mask) == 0 ) {
-            copy.b |= mask;
-            break;
-        }
-
-        isGood = false;
+        isGood = tryMove(&copy.b, isNotEmpty, player2_tube);
     }
-    while(0);
 
     if( isGood )
     {
@@ -378,14 +369,29 @@ bool tryField3dMove( field3d_s *f, uint8_t player1_tube, uint8_t player2_tube )
     return isGood;
 }
 
+static field3d_s field3dGetRandom()
+{
+    field3d_s result;
+    uint8_t *ptr = (uint8_t *)&result;
+    for( size_t i = 0; i < sizeof( field3d_s ); i++ )
+    {
+        ptr[i] = (uint8_t)rand();
+    }
+
+    return result;
+}
+
 void field3dTestMasksVisual()
 {
     enum {
         FIELD_3D_PRINT = 0,
         CELL_WIN_MASKS_COUNTS,
+        RANDOM_FIELD,
     } state = FIELD_3D_PRINT;
 
     size_t mask_index = NUMBER_OF_WIN_MASKS - 1;
+    field3d_s field = {0};
+    uint8_t tube = 0;
     while(1)
     {
         printf( "\e[H" );
@@ -393,51 +399,68 @@ void field3dTestMasksVisual()
         switch (state)
         {
         case FIELD_3D_PRINT:
-            field3dPrint( ( field3d_s ){ .a = win_masks[mask_index], .b = 0 } );
+            field3dPrint( ( field3d_s ){ .a = win_masks[mask_index], .b = 0 }, 0 );
             break;
         case CELL_WIN_MASKS_COUNTS:
             calculateCellWinMasksCounts();
+            break;
+        case RANDOM_FIELD:
+            field3dPrint( field, tube );
             break;
         }
 
         printf( "\e[?25h" );
 
         int c = _getch();
-        if( c == 'a' )
+        if( c == 'w' )
         {
-            if( mask_index > 0 )
+            if( state == RANDOM_FIELD )
+                tube = (tube & 0b0011) | ((tube - 4) & 0b1100);
+        }
+        else if( c == 'a' )
+        {
+            if( state == FIELD_3D_PRINT && mask_index > 0 )
                 mask_index--;
+            if( state == RANDOM_FIELD )
+                tube = (tube & 0b1100) | ((tube - 1) & 0b0011);
+        }
+        else if( c == 's' )
+        {
+            if( state == RANDOM_FIELD )
+                tube = (tube & 0b0011) | ((tube + 4) & 0b1100);
         }
         else if( c == 'd' )
         {
-            if( mask_index + 1 < NUMBER_OF_WIN_MASKS )
+            if( state == FIELD_3D_PRINT && mask_index + 1 < NUMBER_OF_WIN_MASKS )
                 mask_index++;
+            if( state == RANDOM_FIELD )
+                tube = (tube & 0b1100) | ((tube + 1) & 0b0011);
         }
         else if( c == 'q' || c == '\e')
         {
             break;
         }
-        else if (c == '1')
+        else if( c == '1' ) state = FIELD_3D_PRINT;
+        else if( c == '2' ) state = CELL_WIN_MASKS_COUNTS;
+        else if( c == '3' )
         {
-            state = FIELD_3D_PRINT;
+            state = RANDOM_FIELD;
+            field = field3dGetRandom();
         }
-        else if (c == '2')
-        {
-            state = CELL_WIN_MASKS_COUNTS;
-        }
+        else { /* not needed */ }
     }
 
     
 }
 
 
-void field3dPrint(field3d_s f)
+void field3dPrint(field3d_s f, uint8_t tube)
 {
     printf( "  FEDCBA9876543210\r\n" );
     printf( "0x%016" PRIX64 "\r\n", f.a );
     for( size_t c_column = 0; c_column < 4; c_column++ )
     {
-        printf( "|              " );
+        printf( c_column == (tube & 0b11) ? "|      V       " :  "|              " );
     }
 
     printf( "|\r\n" );
@@ -445,7 +468,11 @@ void field3dPrint(field3d_s f)
     {
         for( size_t row = 0; row < CELL_HEIGHT; row++ )
         {
-            printf( row == CELL_HEIGHT - 1 ? "_" : " " );
+            printf( row == CELL_HEIGHT - 1
+                       ? "_"
+                       : c_row == (tube >> 2) && row == CELL_HEIGHT/2
+                           ? ">"
+                           : " " );
             for( size_t c_column = 0; c_column < 4; c_column++ )
             {
                 for( size_t column = 0; column < CELL_WIDTH; column++ )
@@ -456,8 +483,19 @@ void field3dPrint(field3d_s f)
                     uint64_t mask = 1ull << bit_index;
                     bool a = ( f.a & mask ) != 0;
                     bool b = ( f.b & mask ) != 0;
-                    cell_e type = a ? ( b ? CELL_BOTH : CELL_PLAYER_1 ) : ( b ? CELL_PLAYER_2 : CELL_EMPTY );
-                    printf( "%s", Borders[type]->s[border] );
+                    cell_e type = a
+                                    ? ( b
+                                          ? CELL_BOTH
+                                          : CELL_PLAYER_1
+                                    )
+                                    : ( b
+                                          ? CELL_PLAYER_2
+                                          : CELL_EMPTY
+                                    );
+                    const border_s *bord = type == CELL_EMPTY && c_column == (tube & 0b11) && c_row == (tube >> 2)
+                                                              ? &CursorBorders
+                                                              : Borders[type] ;
+                    printf( "%s", bord->s[border] );
                 }
                 printf( row == CELL_HEIGHT - 1 ? "." : " " );
             }
