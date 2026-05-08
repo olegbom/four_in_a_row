@@ -1,3 +1,5 @@
+/* -------------------------------- INCLUDES -------------------------------- */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <inttypes.h>
@@ -6,6 +8,8 @@
 #include "field.h"
 #include "field3d.h"
 #include "cross_getch.h"
+
+/* ---------------------------- PRIVATE TYPEDEFS ---------------------------- */
 
 typedef enum {
     BORDER_TYPE_CORNER_TOP_LEFT = 0,
@@ -23,6 +27,24 @@ typedef enum {
 typedef struct {
     const char *s[NUMBER_OF_BORDER_TYPES];
 } border_s;
+
+typedef struct {
+    uint8_t u;
+} field3dStep_s;
+
+#define MAX_NUMBER_OF_STEPS ((size_t) 4*4*4)
+
+typedef struct {
+    field3dStep_s steps[MAX_NUMBER_OF_STEPS];
+} field3dHistory_s;
+
+typedef struct
+{
+    uint64_t m[7];
+    size_t  size;
+} cellWinMasks_s;
+
+/* ------------------------------ CONST TABLES ------------------------------ */
 
 #define CELL_WIDTH  ((uint32_t)14)
 #define CELL_HEIGHT ((uint32_t)7)
@@ -65,7 +87,6 @@ const borderType_e cell_border_type[CELL_WIDTH * CELL_HEIGHT] = {
 #undef VB
 #undef CE
 #undef SP
-
 
 const border_s EmptyBorders = {
     .s = {
@@ -259,33 +280,6 @@ const uint64_t win_masks[] = {
     0x0008004002001000,
 };
 
-typedef struct
-{
-    uint64_t m[7];
-    size_t  size;
-} cellWinMasks_s;
-
-static cellWinMasks_s cellWinMasks[64] = {0};
-
-static void calculateCellWinMasksCounts()
-{
-    for(size_t i = 0; i < sizeof(cellWinMasks)/sizeof(cellWinMasks[0]); i++)
-    {
-        cellWinMasks[i] = (cellWinMasks_s) {0};
-        uint64_t mask = 1ull << i;
-        for(size_t j = 0; j < NUMBER_OF_WIN_MASKS; j++)
-        {
-            if( (mask & win_masks[j]) != 0 )
-            {
-                cellWinMasks[i].m[cellWinMasks[i].size] = win_masks[j];
-                cellWinMasks[i].size++;
-            }
-        }
-        printf("%zu", cellWinMasks[i].size);
-    }
-
-}
-
 const uint64_t moves_masks[16] = {
     //FEDCBA9876543210
     0x0001000100010001,
@@ -309,19 +303,13 @@ const uint64_t moves_masks[16] = {
     0x8000800080008000,
 };
 
+/* ------------------------- STATIC INLINE FUNCTIONS ------------------------ */
+
 static inline bool moveAvailable( field3d_s f, uint8_t tube )
 {
     size_t i = tube + 48;
     uint64_t isNotEmpty = f.a | f.b;
     return (isNotEmpty & (1ull << i)) == 0;
-}
-
-bool field3dMoveAvailable( field3d_s f, uint8_t tube )
-{
-    if( tube > 15 )
-        return false;
-
-    return moveAvailable( f, tube );
 }
 
 static inline bool tryMove( uint64_t *half, uint64_t isNotEmpty,  uint8_t tube)
@@ -351,6 +339,25 @@ static inline bool tryMove( uint64_t *half, uint64_t isNotEmpty,  uint8_t tube)
     return result;
 }
 
+/* ----------------------- STATIC FUNCTIONS DECLARAION ---------------------- */
+
+static void calculateCellWinMasksCounts();
+static field3d_s field3dGetRandom();
+
+/* ---------------------------- STATIC VARIABLES ---------------------------- */
+
+static cellWinMasks_s cellWinMasks[64] = {0};
+
+/* -------------------------------- FUNCTIONS ------------------------------- */
+
+bool field3dMoveAvailable( field3d_s f, uint8_t tube )
+{
+    if( tube > 15 )
+        return false;
+
+    return moveAvailable( f, tube );
+}
+
 bool tryField3dMove( field3d_s *f, uint8_t player1_tube, uint8_t player2_tube )
 {
     field3d_s copy = *f;
@@ -367,18 +374,6 @@ bool tryField3dMove( field3d_s *f, uint8_t player1_tube, uint8_t player2_tube )
     }
     
     return isGood;
-}
-
-static field3d_s field3dGetRandom()
-{
-    field3d_s result;
-    uint8_t *ptr = (uint8_t *)&result;
-    for( size_t i = 0; i < sizeof( field3d_s ); i++ )
-    {
-        ptr[i] = (uint8_t)rand();
-    }
-
-    return result;
 }
 
 void field3dTestMasksVisual()
@@ -414,26 +409,26 @@ void field3dTestMasksVisual()
         int c = _getch();
         if( c == 'w' )
         {
-            if( state == RANDOM_FIELD )
+            if( state == RANDOM_FIELD && tube > 3)
                 tube = (tube & 0b0011) | ((tube - 4) & 0b1100);
         }
         else if( c == 'a' )
         {
             if( state == FIELD_3D_PRINT && mask_index > 0 )
                 mask_index--;
-            if( state == RANDOM_FIELD )
+            if( state == RANDOM_FIELD && (tube & 0b0011) > 0 )
                 tube = (tube & 0b1100) | ((tube - 1) & 0b0011);
         }
         else if( c == 's' )
         {
-            if( state == RANDOM_FIELD )
+            if( state == RANDOM_FIELD && tube < 12)
                 tube = (tube & 0b0011) | ((tube + 4) & 0b1100);
         }
         else if( c == 'd' )
         {
             if( state == FIELD_3D_PRINT && mask_index + 1 < NUMBER_OF_WIN_MASKS )
                 mask_index++;
-            if( state == RANDOM_FIELD )
+            if( state == RANDOM_FIELD && (tube & 0b0011) < 3)
                 tube = (tube & 0b1100) | ((tube + 1) & 0b0011);
         }
         else if( c == 'q' || c == '\e')
@@ -453,8 +448,7 @@ void field3dTestMasksVisual()
     
 }
 
-
-void field3dPrint(field3d_s f, uint8_t tube)
+void field3dPrint( field3d_s f, uint8_t tube )
 {
     printf( "  FEDCBA9876543210\r\n" );
     printf( "0x%016" PRIX64 "\r\n", f.a );
@@ -466,15 +460,17 @@ void field3dPrint(field3d_s f, uint8_t tube)
     printf( "|\r\n" );
     for(size_t c_row = 0; c_row < 4; c_row++ )
     {
+        bool isRowCursor = c_row == (tube >> 2);
         for( size_t row = 0; row < CELL_HEIGHT; row++ )
         {
             printf( row == CELL_HEIGHT - 1
                        ? "_"
-                       : c_row == (tube >> 2) && row == CELL_HEIGHT/2
+                       : isRowCursor && row == CELL_HEIGHT/2
                            ? ">"
                            : " " );
             for( size_t c_column = 0; c_column < 4; c_column++ )
             {
+                bool isCursor = c_column == (tube & 0b11) && isRowCursor;
                 for( size_t column = 0; column < CELL_WIDTH; column++ )
                 {
                     size_t cell_index = row * CELL_WIDTH + column;
@@ -484,23 +480,49 @@ void field3dPrint(field3d_s f, uint8_t tube)
                     bool a = ( f.a & mask ) != 0;
                     bool b = ( f.b & mask ) != 0;
                     cell_e type = a
-                                    ? ( b
-                                          ? CELL_BOTH
-                                          : CELL_PLAYER_1
-                                    )
-                                    : ( b
-                                          ? CELL_PLAYER_2
-                                          : CELL_EMPTY
-                                    );
-                    const border_s *bord = type == CELL_EMPTY && c_column == (tube & 0b11) && c_row == (tube >> 2)
-                                                              ? &CursorBorders
-                                                              : Borders[type] ;
-                    printf( "%s", bord->s[border] );
+                                    ? ( b ? CELL_BOTH : CELL_PLAYER_1 )
+                                    : ( b ? CELL_PLAYER_2 : CELL_EMPTY );
+
+                    printf( isCursor ? ANSI_BG_COLOR("%s", ANSI_GREEN) : "%s", Borders[type]->s[border] );
                 }
+
                 printf( row == CELL_HEIGHT - 1 ? "." : " " );
             }
 
             printf( "\r\n" );
         }
     }
+}
+
+/* ---------------------------- STATIC FUNCTIONS ---------------------------- */
+
+static void calculateCellWinMasksCounts()
+{
+    for(size_t i = 0; i < sizeof(cellWinMasks)/sizeof(cellWinMasks[0]); i++)
+    {
+        cellWinMasks[i] = (cellWinMasks_s) {0};
+        uint64_t mask = 1ull << i;
+        for(size_t j = 0; j < NUMBER_OF_WIN_MASKS; j++)
+        {
+            if( (mask & win_masks[j]) != 0 )
+            {
+                cellWinMasks[i].m[cellWinMasks[i].size] = win_masks[j];
+                cellWinMasks[i].size++;
+            }
+        }
+        printf("%zu", cellWinMasks[i].size);
+    }
+
+}
+
+static field3d_s field3dGetRandom()
+{
+    field3d_s result;
+    uint8_t *ptr = (uint8_t *)&result;
+    for( size_t i = 0; i < sizeof( field3d_s ); i++ )
+    {
+        ptr[i] = (uint8_t)rand();
+    }
+
+    return result;
 }

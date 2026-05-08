@@ -17,5 +17,7 @@
 
 #define ANSI_COLOR(s, type, color) "\e[" type color s "\e[0m"
 
+#define ANSI_BG_COLOR(s, color) "\e[4" color s "\e[0m"
+
 #define ANSI_SAVE_POS    "\e[s"
 #define ANSI_RESTORE_POS "\e[u"
