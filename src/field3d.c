@@ -454,7 +454,9 @@ void field3dPrint( field3d_s f, uint8_t tube )
     printf( "0x%016" PRIX64 "\r\n", f.a );
     for( size_t c_column = 0; c_column < 4; c_column++ )
     {
-        printf( c_column == (tube & 0b11) ? "|      V       " :  "|              " );
+        printf( c_column == (tube & 0b11)
+                    ? "|" ANSI_COLOR("  VVVVVVVVVV  ", ANSI_BOLD, ANSI_BLUE)
+                    : "|              " );
     }
 
     printf( "|\r\n" );
@@ -465,8 +467,8 @@ void field3dPrint( field3d_s f, uint8_t tube )
         {
             printf( row == CELL_HEIGHT - 1
                        ? "_"
-                       : isRowCursor && row == CELL_HEIGHT/2
-                           ? ">"
+                       : isRowCursor && row > 0
+                           ? ANSI_COLOR(">", ANSI_BOLD, ANSI_BLUE)
                            : " " );
             for( size_t c_column = 0; c_column < 4; c_column++ )
             {
