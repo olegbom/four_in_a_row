@@ -519,11 +519,13 @@ static void calculateCellWinMasksCounts()
 
 static field3d_s field3dGetRandom()
 {
-    field3d_s result;
-    uint8_t *ptr = (uint8_t *)&result;
-    for( size_t i = 0; i < sizeof( field3d_s ); i++ )
+    field3d_s result = {0};
+
+    for(int i = 0; i < 32; i++)
     {
-        ptr[i] = (uint8_t)rand();
+        uint8_t p1 = (uint8_t)(rand() & 0xF);
+        uint8_t p2 = (uint8_t)(rand() & 0xF);
+        (void)tryField3dMove( &result, p1, p2 );
     }
 
     return result;
